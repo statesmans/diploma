@@ -1,0 +1,8 @@
+<div class="text-bg-primary">
+  <button mat-button [matMenuTriggerFor]="menu" class="btn btn-primary">Menu</button>
+<mat-menu #menu="matMenu">
+  <button mat-menu-item (click)="navigate('/image-sets')">Image sets</button>
+  <button mat-menu-item (click)="navigate('/models')">Models</button>
+</mat-menu>
+
+</div>

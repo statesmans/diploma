@@ -1,0 +1,43 @@
+<div [formGroup]="modelForm" class="container">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name *</label>
+        <input type="text" class="form-control"  formControlName="name" id="name">
+    </div>
+    <!-- <input id="name" type="text" formControlName="name"> -->
+    
+    <div class="mb-3">
+        <label for="trainSet" class="form-label">Training set* </label>
+        <select
+            id="trainSet"
+            class="form-select" 
+            formControlName="trainSet"
+        >
+            <option *ngFor="let imageSet of imageSets" [value]="imageSet.id">
+                {{ imageSet.name }}
+            </option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="testSet" class="form-label">Test set*</label>
+        <select
+            id="testSet"
+            class="form-select" 
+            formControlName="testSet"
+        >
+            <option *ngFor="let imageSet of imageSets" [value]="imageSet.id">
+                {{ imageSet.name }}
+            </option>
+        </select>
+    </div>
+
+
+    <button 
+        [disabled]="modelForm.invalid"
+        type="submit" 
+        class="btn btn-primary" 
+        (click)="submit()"
+    >Save</button>
+</div>
+
+

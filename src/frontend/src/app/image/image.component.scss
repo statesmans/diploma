@@ -1,0 +1,12 @@
+img {
+    width: 70px;
+    height: 70px;
+}
+
+::ng-deep {
+    .image-data-modal {
+        & .modal-dialog {
+            max-width: 1000px;
+        }
+    }
+}

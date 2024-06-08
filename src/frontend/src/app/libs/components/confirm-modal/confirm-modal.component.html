@@ -1,0 +1,29 @@
+<div class="modal-header align-items-center d-flex justify-between">
+    <h4 class="modal-title">{{ content.title }}</h4>
+  
+    <button
+      type="button"
+      class="btn btn-xs btn-icon btn-transparent"
+      (click)="close(false)"
+    >
+      <mat-icon aria-hidden="false"  fontIcon="close"></mat-icon>
+    </button>
+  </div>
+  
+  <div class="modal-body">
+    <p>{{ content.body }}</p>
+  </div>
+  
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="close(false)"
+    >
+      {{ content.abort }}
+    </button>
+    <button type="button" class="btn btn-danger" (click)="close(true)">
+      {{ content.confirm }}
+    </button>
+</div>
+  

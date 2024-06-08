@@ -1,0 +1,35 @@
+<div class="">
+    <div class="controls">
+        <div class="training__controls flex flex-col">
+            <button class="btn btn-primary mb-2">
+                Start inference
+            </button>
+        </div>
+
+        <input
+            #input
+            (change)="uploadFiles($event)"
+            type="file"
+            class="full-input"
+            e2e="file-input"
+            multiple
+        />
+        <button class="btn btn-primary" (click)="input.click()">
+            Load images
+        </button>
+
+        <mat-form-field>
+            <mat-label>Select model</mat-label>
+            <!-- <mat-option selected></mat-option> -->
+            <mat-select [(value)]="selectedModel">
+
+                <mat-option *ngFor="let model of models" [value]="model.id">{{model.name}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <button class="btn btn-primary">
+            Save
+        </button>
+    </div>
+    <app-images-list [images]="images"></app-images-list>
+</div>

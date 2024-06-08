@@ -1,0 +1,126 @@
+[
+  {
+    "type": "SERVICE",
+    "name": "asset-manager-backend",
+    "displayName": "Assets (core service)",
+    "port": 13001,
+    "path": "/service/asset/",
+    "envVars": ["APP_SERVICE_URL_ASSET"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "condition-monitoring-backend",
+    "displayName": "Condition Monitoring",
+    "port": 13002,
+    "path": "/service/condition-monitoring/",
+    "envVars": ["APP_SERVICE_URL_CONDITION_MONITORING"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "file-backend",
+    "displayName": "Files (core service)",
+    "port": 13003,
+    "path": "/service/file/",
+    "envVars": ["APP_SERVICE_URL_FILE"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "hub-backend",
+    "displayName": "Hub (core service)",
+    "port": 13004,
+    "path": "/service/hub/",
+    "envVars": ["APP_SERVICE_URL_HUB"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "identity-backend",
+    "displayName": "Identity backend: users & tenants",
+    "port": 13007,
+    "path": "/service/identity/",
+    "envVars": ["APP_SERVICE_URL_IDENTITY"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "device-backend",
+    "displayName": "Device backend",
+    "port": 13008,
+    "path": "/service/device/",
+    "envVars": ["APP_SERVICE_URL_DEVICE"]
+  },
+  {
+    "type": "SERVICE",
+    "name": "app-catalog-backend",
+    "displayName": "App catalog",
+    "port": 13009,
+    "path": "/service/app-catalog/",
+    "envVars": ["APP_SERVICE_URL_APP_CATALOG"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "asset-manager-frontend",
+    "angularAppName": "app-asset-manager",
+    "port": 13102,
+    "path": "/asset-manager/",
+    "devDependencies": ["asset-manager-backend", "hub-backend", "file-backend"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "asset-monitoring-frontend",
+    "angularAppName": "app-asset-monitoring",
+    "port": 13103,
+    "path": "/assets/",
+    "devDependencies": ["asset-manager-backend", "hub-backend", "file-backend"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "condition-monitoring-frontend",
+    "angularAppName": "app-condition-monitoring",
+    "port": 13104,
+    "path": "/condition-monitoring/",
+    "devDependencies": [
+      "asset-manager-backend",
+      "hub-backend",
+      "grafana",
+      "condition-monitoring-backend",
+      "file-backend"
+    ]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "hub-frontend",
+    "angularAppName": "app-hub",
+    "port": 13106,
+    "path": "/hub/",
+    "devDependencies": ["file-backend", "identity-backend", "hub-backend"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "tenant-frontend",
+    "angularAppName": "app-tenant",
+    "port": 13108,
+    "path": "/tenant/",
+    "devDependencies": ["identity-backend", "hub-backend", "file-backend"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "user-frontend",
+    "angularAppName": "app-user",
+    "port": 13109,
+    "path": "/user/",
+    "devDependencies": ["hub-backend", "identity-backend", "file-backend"]
+  },
+  {
+    "type": "FRONTEND",
+    "name": "device-frontend",
+    "angularAppName": "app-device",
+    "port": 13110,
+    "path": "/device/",
+    "devDependencies": [
+      "hub-backend",
+      "identity-backend",
+      "file-backend",
+      "device-backend",
+      "app-catalog-backend"
+    ]
+  }
+]

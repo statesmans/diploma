@@ -1,0 +1,7 @@
+names:
+- 1
+- 2
+nc: 2
+path: /home/yegor/diploma/src/engine/dataset
+train: images/train
+val: images/val

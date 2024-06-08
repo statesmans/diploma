@@ -1,0 +1,12 @@
+canvas {
+  border: 1px solid black;
+  cursor: crosshair;
+}
+
+button {
+  margin-top: 10px;
+}
+
+::ng-deep .cdk-overlay-container {
+  z-index: 999999999; /* Adjust this value as needed */
+}

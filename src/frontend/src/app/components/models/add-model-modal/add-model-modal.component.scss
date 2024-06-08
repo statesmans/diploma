@@ -1,0 +1,9 @@
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+button {
+    align-self: end;
+    width: 100px;
+}

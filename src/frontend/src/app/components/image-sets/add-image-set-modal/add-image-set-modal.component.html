@@ -1,0 +1,12 @@
+<div>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name *</label>
+        <input type="text" class="form-control"  [formControl]="name" id="name">
+    </div>
+    
+    <div class="add-btn" >
+        <button [disabled]="name.invalid" class="btn btn-primary" (click)="createImageSet()">
+            Add new image set
+        </button>
+    </div>
+</div>

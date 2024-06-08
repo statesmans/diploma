@@ -1,0 +1,20 @@
+{
+    "name": "project-name",
+    "version": "0.0.1",
+    "description": "",
+    "author": "",
+    "private": true,
+    "license": "UNLICENSED",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+        "dev:backend": "cd src/backend && npm run start:dev",
+        "dev:frontend": "cd src/frontend && npm run start",
+        "shell": "docker-compose -f docker-compose.shell.yml build && docker-compose -f docker-compose.shell.yml -p cleareye run --rm -u 1000 --name cleareye-dev --service-ports app bash || true && echo Stopping environment... && docker-compose -f docker-compose.shell.yml -p cleareye down",
+        "shell:build": "docker-compose -f docker-compose.shell.yml -p cleareye build --no-cache",
+        "shell:join": "docker exec -it cleareye-dev bash",
+        "shell:stop": "docker-compose -f docker-compose.shell.yml -p cleareye down"
+    },
+    "dependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
