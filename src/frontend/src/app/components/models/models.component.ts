@@ -6,6 +6,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ModalConfirmComponent } from '../../libs/components/confirm-modal/confirm-modal.component';
 import { AddModelModalComponent } from './add-model-modal/add-model-modal.component';
 import { elementAt } from 'rxjs';
+import { ThemePalette } from '@angular/material/core';
+import { ProgressSpinnerMode } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-models',
@@ -15,7 +17,11 @@ import { elementAt } from 'rxjs';
 export class ModelsComponent implements OnInit {
   displayedColumns: string[] = ['name', 'trainingSet', 'testSet', 'createdAt', 'controls'];
 
+  color: ThemePalette = 'primary';
+  mode: ProgressSpinnerMode = 'indeterminate';
+  value = 50;
 
+  trainingStatuses: Record<string, boolean> = {}
 
   models: Model[] = []
 
@@ -79,9 +85,11 @@ export class ModelsComponent implements OnInit {
 
   async updateModels() {
     this.dataSource = new MatTableDataSource( await this.modelService.getAll());
+
   }
 
   async startTraining(modelId: string) {
     await this.modelService.startTraining(modelId);
+    // this.trainingStatuses[modelId] = true
   }
 }

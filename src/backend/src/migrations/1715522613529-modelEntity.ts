@@ -48,6 +48,12 @@ export class ImageSet1715522613529 implements MigrationInterface {
                         isNullable: false,
                         onUpdate: 'CURRENT_TIMESTAMP',
                     },
+                    {
+                        name: 'training_result_file_uuid',
+                        type: "varchar",
+                        length: "255",
+                        isNullable: true
+                    }
                 ],
                 foreignKeys: [
                     new TableForeignKey({

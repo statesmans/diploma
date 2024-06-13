@@ -9,6 +9,8 @@ import { MatTableModule } from "@angular/material/table";
 import { MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from "@angular/material/menu";
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import { AppComponent } from "./app.component";
 import { AppRoutingModule } from "./app-routing,module";
@@ -29,7 +31,7 @@ import { ImagesListComponent } from "./images-list/images-list.component";
 import { ImageDataComponent } from "./image-data/image-data.component";
 import { LabelService } from "./services/label.service";
 import { DefectClassService } from "./services/defect-class.service";
-
+import { ToastrModule } from "ngx-toastr";
 
 @NgModule({
     declarations: [
@@ -51,11 +53,14 @@ import { DefectClassService } from "./services/defect-class.service";
         CommonModule,
         ReactiveFormsModule,
         AppRoutingModule,
+        ToastrModule.forRoot(),
         RouterOutlet,
         MatTableModule,
         MatMenuModule,
         MatSelectModule,
         MatIconModule,
+        MatProgressSpinnerModule,
+        MatTabsModule
     ],
     providers: [
         HttpService,

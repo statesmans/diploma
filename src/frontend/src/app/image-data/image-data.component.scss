@@ -7,6 +7,18 @@ button {
   margin-top: 10px;
 }
 
-::ng-deep .cdk-overlay-container {
-  z-index: 999999999; /* Adjust this value as needed */
+::ng-deep {
+  .cdk-overlay-container {
+    z-index: 999999999; /* Adjust this value as needed */
+  }
+  mat-tab-header {
+    margin-bottom: 10px;
+    background-color: gray;
+  }
+
+}
+
+.canvas_container {
+  display: flex;
+  justify-content: center;
 }

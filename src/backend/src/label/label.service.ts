@@ -1,9 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LabelEntity } from './label.entity';
+import { LabelEntity, LabelType } from './label.entity';
 import { Repository } from 'typeorm';
 import { CreateLabelDto, UpdateLabelDto } from './dto/label.dto';
 import { ImageService } from '../image/image.service';
+import { groupBy } from 'rxjs';
 
 @Injectable()
 export class LabelService {
@@ -21,11 +22,37 @@ export class LabelService {
         return await this.labelRepository.save(label);
     }
 
-    findImageId(imageId: number): Promise<LabelEntity> {
-        return this.labelRepository.findOneBy({
+    async findImageId(imageId: number): Promise<LabelEntity> {
+        return await this.labelRepository.findOneBy({
             imageId
         });
     }
+
+    async getManualLabelByImageId(imageId: number): Promise<LabelEntity> {
+        return await this.labelRepository
+            .createQueryBuilder('label')
+            .where('label.type = :labelType', { labelType: LabelType.Manual })
+            .andWhere('label.image_id = :imageId', { imageId })
+            .getOne();
+    }
+
+    async getInferredLabelsByImageId(imageId: number): Promise<LabelEntity[]> {
+        return await this.labelRepository
+            .createQueryBuilder('label')
+            .where('label.type = :labelType', { labelType: LabelType.Inferred })
+            .andWhere('label.image_id = :imageId', { imageId })
+            .getMany();
+    }
+
+    async getInferredLabelsGroupedByModel(imageId: number): Promise<LabelEntity[]> {
+
+        return await this.labelRepository
+            .createQueryBuilder('label')
+            .leftJoinAndSelect('label.Model', 'model')
+            .where('label.type = :labelType', { labelType: '2' })
+            .getMany();
+    }
+
 
     async findAll(): Promise<LabelEntity[]> {
         return await this.labelRepository.find();
@@ -44,33 +71,6 @@ export class LabelService {
     }
 
     async update(id: number, updateLabelDto: UpdateLabelDto): Promise<LabelEntity> {
-        const label = await this.findOne(id);
-        const { width, height } = await this.imageService.findOne(label.imageId)
-
-        const { xy } = updateLabelDto.labelData;
-        const X_center = (xy[3] / 2) + xy[1];
-        const Y_center = (xy[4] / 2) + xy[2];
-
-        const X_center_norm = X_center / width;
-        const Y_center_norm = Y_center / height;
-
-        const width_norm = xy[3] / width
-        const height_norm = xy[4] / height
-
-        
-
-        // const result: UpdateLabelDto = {
-        //     ...updateLabelDto,
-        //     labelData: {
-        //         xy: [
-        //             xy[0],
-                    // X_center_norm,
-                    // Y_center_norm,
-                    // width_norm,
-                    // height_norm
-        //         ]
-        //     }
-        // }
 
         await this.labelRepository.update(id, updateLabelDto);
         return this.labelRepository.findOneOrFail({

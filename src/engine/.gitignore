@@ -35,3 +35,9 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 .env
+
+
+# Ignore Python bytecode files
+__pycache__
+*.pyc
+*.pyo

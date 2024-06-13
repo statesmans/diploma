@@ -1,4 +1,6 @@
+
 import { ImageSetEntity } from 'src/image-set/image-set.entity';
+import { LabelEntity } from 'src/label/label.entity';
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne, JoinColumn, Generated, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: `model` })
@@ -9,8 +11,6 @@ export class ModelEntity {
 
   @Column({ type: 'varchar', length: 255 })
   name!: string;
-
-
 
   @Column({
       type: 'integer',
@@ -38,6 +38,10 @@ export class ModelEntity {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt!: Date;
+
+
+  @Column({ type: 'text', nullable: true })
+  trainingResultFileUuid!: string | null;
   
   @ManyToOne(() => ImageSetEntity, imageSet => imageSet.trainingSetModels, {
       onDelete: 'SET NULL',
@@ -56,10 +60,8 @@ export class ModelEntity {
   @JoinColumn([{ name: 'test_set', referencedColumnName: 'id' }])
   readonly TestSet!: ImageSetEntity;
 
-
-  // @Column({ type: 'text', nullable: true })
-  // trainingResultFileUuid!: string | null;
-
+  @OneToMany(() => LabelEntity, label => label.Model)
+  Labels: LabelEntity[];
   // @Column({ type: 'text', nullable: true })
   // trainingResultFileName!: string;
 

@@ -19,6 +19,12 @@ export class LabelTable1716993270961 implements MigrationInterface {
                     isNullable: false,
                 },
                 {
+                    name: 'model_uuid',
+                    type: 'varchar',
+                    length: '36',
+                    isNullable: true,
+                },
+                {
                     name: 'confidence',
                     type: 'float',
                     isNullable: true,

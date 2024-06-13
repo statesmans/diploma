@@ -47,7 +47,6 @@ import { uuid } from 'uuidv4';
         uuidFile: string
     ): Promise<NodeJS.ReadableStream> {
         const azureFilename = this.getAzureFilename(filename, uuidFile);
-        console.log('download', azureFilename)
 
         const blockBlobClient = await this.getBlobClient(azureFilename);
 

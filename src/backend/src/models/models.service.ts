@@ -6,6 +6,8 @@ import { Manifest, ModelCreateDto, ModelUpdateDto } from './dto/model.dto';
 import { ImageEntity } from 'src/image/image.entity';
 import { AzureService } from 'src/azure/azure.service';
 import { LabelEntity } from 'src/label/label.entity';
+import { TrainingModelService } from './training-model/training-model.service';
+import { DefectClassService } from 'src/defect-class/defect-class.service';
 
 @Injectable()
 export class ModelsService {
@@ -18,6 +20,8 @@ export class ModelsService {
     @InjectRepository(LabelEntity) 
     private labelRepository: Repository<LabelEntity>,
     private azureService: AzureService,
+    private modelTrainingService: TrainingModelService,
+    private defectClassService: DefectClassService
   ) {}
 
   async getAll(): Promise<ModelEntity[]> {
@@ -64,11 +68,18 @@ export class ModelsService {
 
     console.log(model);
 
-    const manifest = this.createTrainingManifest(
+    const manifest = await this.createTrainingManifest(
       id,
       model.TrainingSet.id,
       model.TestSet.id,
     )
+
+    const trainingResultFileUuid = await this.modelTrainingService.startTraining(manifest);
+
+    this.update(model.id, {
+      ...model,
+      trainingResultFileUuid
+    })
   }
 
   async createTrainingManifest(
@@ -77,64 +88,43 @@ export class ModelsService {
     testSetId: number,
   ) {
     let manifest: Manifest = {
-      train: {},
-      test: {},
-      defectIds: [],
+      model_uuid: modelId,
+      images: {},
+      defects: {},
       labels: {},
     };
 
+    const defects = await this.defectClassService.getAll();
+
+    const usedDefects = await this.imageRepository.createQueryBuilder('image')
+      .leftJoinAndSelect('image.ManualLabel', 'ManualLabel', 'ManualLabel.imageId = image.id')
+      .where('image.image_set_id = :id', { id: traninigSetId })
+      .andWhere('ManualLabel.defect_class_id IS NOT NULL')
+      .select('DISTINCT ManualLabel.defect_class_id')
+      .getRawMany();
     
+    usedDefects.map(defect => {
+      manifest.defects[defect.defect_class_id] = defects.find(d => d.id === defect.defect_class_id).name;
+    })
 
     const trainigSetImages = await this.imageRepository.createQueryBuilder('image')
       .leftJoinAndSelect('image.ManualLabel', 'ManualLabel', 'ManualLabel.imageId = image.id')
       .where('image.image_set_id = :id', { id: traninigSetId })
-      // .getQueryAndParameters();
       .getMany()
 
-    const testSetImages = await this.imageRepository.createQueryBuilder('image')
-      .where('image.image_set_id = :id', { id: testSetId })
-      .leftJoin('image.ManualLabel', 'ManualLabel')
-      .getMany();
-
-      console.log(trainigSetImages)
-    // const labels = await this.labelRepository.createQueryBuilder('label')
-    //   .where(
-    //     'label.image_id IN (:...ids)', 
-    //     { 
-    //       ids: [
-    //         ...trainigSetImages.map(image => image.id),
-    //         ...testSetImages.map(image => image.id) 
-    //       ]
-    //     }
-    //   )
-    //   .getMany();
-
-    
     trainigSetImages.map(image => {
       // const label = labels.find(label => label.imageId === image.id);
       const label = image.ManualLabel;
       if (!label?.labelData?.xy?.length) return; 
 
-      manifest.train[image.uuidFile] = this.azureService.getAzureFilename(image.filename, image.uuidFile);
+      manifest.images[image.uuidFile] = image.filename;
       manifest.labels[image.uuidFile] = {
-        labelData: label.labelData.xy.join(" "),
-        defectId: label.defectClassId,
-      }
-    });
-
-    testSetImages.map(image => {
-      // const label = labels.find(label => label.imageId === image.id);
-      const label = image.ManualLabel;
-
-      if (!label?.labelData?.xy?.length) return; 
-
-      manifest.test[image.uuidFile] = this.azureService.getAzureFilename(image.filename, image.uuidFile)
-      manifest.labels[image.uuidFile] = {
-        labelData: label.labelData.xy.join(" "),
-        defectId: label.defectClassId,
+        label_data: label.labelData.xy.join(" "),
+        defect_id: label.defectClassId,
       }
     });
 
     console.log(manifest);
+    return manifest;
   }
 }

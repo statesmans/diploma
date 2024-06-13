@@ -6,7 +6,7 @@ volumes:
 services:
   app:
     build:
-      context: _fixtures/dockershell
+      context: .
       dockerfile: Dockerfile
       args:
         NODE_VERSION: 18
@@ -14,55 +14,31 @@ services:
         NESTJS_VERSION: 10
         NG_VERSION: 17
         NX_VERSION: 17
-    # Makes the docker container/image list easier to read
-    image: ${COMPOSE_PROJECT_NAME:-shopfloorio}-dockershell
-    # This gives us a nice name for the host in the container shell instead of app@dfeb636a
-    hostname: ${COMPOSE_PROJECT_NAME:-shopfloorio}-dockershell
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
+
+    image: cleareye-dockershell
+    hostname: cleareye-dockershell
     working_dir: /app
     depends_on:
-      # - reverse-proxy
-      # - entrypoint
       - db
       - phpmyadmin
-      - azurite
-
-      # Example for a separate database for a specific service
-      # - db-backend2
     volumes:
       - ./:/app
       - ~/.npmrc:/root/.npmrc
       - ~/.npmrc:/home/node/.npmrc
       - ~/.npm/:/home/node/.npm
     ports:
-      - '13000-13015:13000-13015'
+      - '13000-13011:13000-13011'
     environment:
-      # General settings
-      SSH_AUTH_SOCK: /mnt/ssh-auth.sock
-
       APP_PORT_BACKEND: 13001
 
-
-
-      # Other configurations (db's, ...)
+      # DB config
       APP_DB_HOST: db
       APP_DB_USER: app
       APP_DB_PASS: app
       APP_DB_NAME: app
-      APP_TEST_DB_HOST: db-testing
-      APP_TEST_DB_USER: root
-      APP_TEST_DB_PASS: root
-      APP_TEST_DB_NAME: app-testing
-      APP_FILESERVICE_STORAGE_ADAPTER: fs
-      APP_HTTP_SCHEME: ${SIO_EXTERNAL_SCHEME:-http}
-      APP_HOSTNAME: ${SIO_EXTERNAL_HOSTNAMEPORT:-localhost}
 
-
-      # Azurite
-      APP_AZ_BLOBSTORE_ACCOUNT: devstoreaccount1
-      APP_AZ_BLOBSTORE_ACCOUNTURL: http://azurite:10001/devstoreaccount1
-      APP_AZ_BLOBSTORE_ACCOUNTKEY: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     logging:
       options:
@@ -88,39 +64,3 @@ services:
       PMA_USER: root
       PMA_PASSWORD: root
 
-  azurite:
-      image: mcr.microsoft.com/azure-storage/azurite:3.29.0
-      command:
-        - "azurite-blob"
-        - "--blobHost=0.0.0.0"
-        # Prevent conflict with file-backend Azurite service
-        - "--blobPort=10001"
-        - "--location=/data"
-      ports:
-        - 13095:10001
-      volumes:
-        - azurite_data:/data
-      logging:
-        options:
-          max-size: 10m
-
-  # python_service:
-  #   build:
-  #     context: ./src/engine
-  #     dockerfile: Dockerfile
-  #   image: python_service
-  #   volumes:
-  #     - ./python_service:/app
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     APP_DB_HOST: db
-  #     APP_DB_USER: app
-  #     APP_DB_PASS: app
-  #     APP_DB_NAME: app
-  #     # APP_AZ_BLOBSTORE_ACCOUNT: devstoreaccount1
-  #     # APP_AZ_BLOBSTORE_ACCOUNTURL: http://azurite:10001/devstoreaccount1
-  #     # APP_AZ_BLOBSTORE_ACCOUNTKEY: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
-  #   logging:
-  #     options:
-  #       max-size: 10m

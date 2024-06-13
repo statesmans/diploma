@@ -1,5 +1,5 @@
 export interface Model {
-    id: number,
+    id: string,
     name: string,
     trainingSet: number | null,
     testSet: number | null,
@@ -51,6 +51,7 @@ export interface Image {
     imageSetId: number; 
     width: number;
     height: number;
+    createdAt: Date
 }
 
 export interface LabelInterface {
@@ -79,4 +80,6 @@ export interface Label {
     // classification: number;
     defectClassId: number;
     labelData: LabelInterface;
+    modelUuid: string;
+    Model?: Model
 }

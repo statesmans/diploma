@@ -9,6 +9,7 @@ import { DefectClassEntity } from './defect-class.entity';
     TypeOrmModule.forFeature([DefectClassEntity])
   ],
   controllers: [DefectClassController],
-  providers: [DefectClassService]
+  providers: [DefectClassService],
+  exports: [DefectClassService, TypeOrmModule]
 })
 export class DefectClassModule {}

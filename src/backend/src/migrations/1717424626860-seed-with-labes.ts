@@ -16,6 +16,7 @@ export class SeedWithLabes1717424626860 implements MigrationInterface {
                 {
                     name: 'name',
                     type: 'char(255)',
+                    isUnique: true,
                     isNullable: false,
                 },
             ]
@@ -24,8 +25,7 @@ export class SeedWithLabes1717424626860 implements MigrationInterface {
         await queryRunner.query(`
             INSERT INTO defect_class (name) VALUES
             ('OK'), 
-            ('Scratch'),
-            ('Oil leak'),
+            ('Defect'),
             ;
         `)
 

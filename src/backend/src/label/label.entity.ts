@@ -1,6 +1,7 @@
 import { ImageEntity } from 'src/image/image.entity';
 import { LabelInterface } from '../lib/label';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, } from 'typeorm';
+import { ModelEntity } from 'src/models/models.entity';
 
 export enum LabelClassification {
     Unclassified = 0,
@@ -29,6 +30,9 @@ export class LabelEntity {
     @Column({ type: 'integer', nullable: true })
     classification!: LabelClassification;
 
+    @Column({ type: 'uuid', nullable: false, default: 'none' })
+    modelUuid!: string | null;
+    
     // only OK or Defect
     @Column({ type: 'integer', nullable: true })
     defectClassId!: number | null;
@@ -45,4 +49,8 @@ export class LabelEntity {
     })
     @JoinColumn([{ name: 'image_id', referencedColumnName: 'id' }])
     readonly Image!: ImageEntity;
+
+    @ManyToOne(() => ModelEntity, model => model.Labels)
+    @JoinColumn([{ name: 'model_uuid', referencedColumnName: 'id' }])
+    Model: ModelEntity;
 }

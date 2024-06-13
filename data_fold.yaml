@@ -1,7 +1,0 @@
-
-        train: /home/yegor/diploma/src/engine/dataset/images/temp_train
-        val: /home/yegor/diploma/src/engine/dataset/images/temp_val
-
-        nc: 1  # number of classes
-        names: ['class0']
-        

@@ -23,17 +23,17 @@ def get_blob_name(
 ): 
     return f"{fileName}_{fileUuid}"
 
-async def download_image_and_save_locally(
-    file_name: str, 
-    file_uuid: str,
-    target_save_path: str
+async def download_file_and_save(
+    blob_name: str, 
+    name_to_save: str,
+    target_save_path: str,
 ):
     try:
         if not os.path.exists(target_save_path):
             os.makedirs(target_save_path)
 
         try:
-            blob_client = container_client.get_blob_client(get_blob_name(file_name, file_uuid))
+            blob_client = container_client.get_blob_client(blob_name)
             download_stream = blob_client.download_blob()
         except Exception as e:
             raise HTTPException(status_code=404, detail=f"An error occurred while downloading the blob: {e}")
@@ -43,14 +43,43 @@ async def download_image_and_save_locally(
         download_stream.readinto(image_stream)
         image_stream.seek(0)  # Reset stream position
 
-        filename_to_save = file_uuid + os.path.splitext(file_name)[1]
-
         # Save the image locally
-        with open(os.path.join(target_save_path, filename_to_save), 'wb') as file:
+        with open(os.path.join(target_save_path, name_to_save), 'wb') as file:
             file.write(image_stream.getbuffer())
-
-        image = Image.open(os.path.join(target_save_path, filename_to_save))
         
-        return image.size
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occur during image download: {e}")
+
+async def upload_model(blob_name: str, model_path: str):
+    try:
+        blob_client = container_client.get_blob_client(blob_name)
+        
+        with open(model_path, "rb") as data:
+            await blob_client.upload_blob(data, overwrite=True)
+
+        print(f"Training model uploaded to blob storage successfully.")
+    except Exception as ex:
+        print(f"Error: {ex}")
+
+async def download_model_file(
+    blob_name: str, 
+    name_to_save: str,
+    target_save_path: str,
+):
+    if not os.path.exists(target_save_path):
+        os.makedirs(target_save_path)
+    
+    try:
+        blob_client = container_client.get_blob_client(blob_name)
+        
+        with open(os.path.join(target_save_path, name_to_save), "wb") as model_file:
+            stream = blob_client.download_blob()
+            print('after stream', stream)
+            data = stream.readall()
+            print('after readall')
+
+            model_file.write(data)
+
+        print(f"Model {blob_name} downloaded successfully to {target_save_path}.")
+    except Exception as e:
+        print(f"An error occurred during download of the model: {e}")

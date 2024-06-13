@@ -9,3 +9,4 @@ export class DefectClassEntity {
     name!: string;
 
 }
+

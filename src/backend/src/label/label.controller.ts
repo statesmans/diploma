@@ -14,8 +14,28 @@ export class LabelController {
     async getOneByImageId(
       @Param('imageId') imageId: number,
     ): Promise<LabelEntity> {
-        console.log( await this.labelService.findImageId(imageId))
       return await this.labelService.findImageId(imageId);
+    }
+
+    @Get('/manual/image-id/:imageId')
+    async getManualByImageId(
+      @Param('imageId') imageId: number,
+    ): Promise<LabelEntity> {
+      return await this.labelService.getManualLabelByImageId(imageId);
+    }
+
+    @Get('/automatic/image-id/:imageId')
+    async getAutomaticByImageId(
+      @Param('imageId') imageId: number,
+    ): Promise<LabelEntity[]> {
+      return await this.labelService.getInferredLabelsByImageId(imageId);
+    }
+
+    @Get('/all-inferred/:imageId')
+    async getAllInferredByImageAndModelId(
+      @Param('imageId') imageId: number,
+    ): Promise<LabelEntity[]> {
+      return await this.labelService.getInferredLabelsGroupedByModel(imageId);
     }
   
     @Post()

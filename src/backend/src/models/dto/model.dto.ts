@@ -28,6 +28,9 @@ export class ModelUpdateDto {
 
     @JoiSchema(Joi.number().allow(null))
     testSet: number | null;
+
+    @JoiSchema(Joi.string().allow(null))
+    trainingResultFileUuid: string | null;
 }
 
 export const ModelUpdateSchemaDto = Joi.object({
@@ -36,19 +39,34 @@ export const ModelUpdateSchemaDto = Joi.object({
     testSet: Joi.number().allow(null),
 });
 
+export interface Hyperparameters {
+    yolo_fine_tune: 1 | 0
 
-export interface Manifest {
-    defectIds: number[];
-    test: {
-        [key: string]: string,
+}
+
+export interface TrainingManifest {
+    model_uuid: string;
+    defects: {
+        [key: string]: string
     };
-    train: {
+    images: {
         [key: string]: string,
     };
     labels: {
         [key: string]: {
-            labelData: string,
-            defectId: number
+            label_data: string,
+            defect_id: number
         }
     }
+}
+
+export interface InferenceManifest {
+    model_uuid: string,
+    images: {
+        [key: string]: string,
+    };
+}
+
+export interface InferenceResponse {
+
 }

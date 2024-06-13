@@ -1,6 +1,8 @@
 import { Injectable } from "@angular/core";
 import { HttpService } from "../shared/http.service";
-import { Label, LabelCreateDto, LabelUpdateDto } from "../shared/interfaces";
+import { Label, LabelCreateDto, LabelUpdateDto, Model } from "../shared/interfaces";
+
+
 
 @Injectable()
 export class LabelService {
@@ -10,6 +12,18 @@ export class LabelService {
 
     async getOneByImageId(id: number): Promise<Label> {
         return (await this.http.get<Label>(`label/image-id/${id}`)) as Label;
+    }
+
+    async getManualByImageId(id: number): Promise<Label> {
+        return (await this.http.get<Label>(`label/manual/image-id/${id}`)) as Label;
+    }
+
+    async getAutomaticByImageId(id: number): Promise<Label[]> {
+        return (await this.http.get<Label[]>(`label/automatic/image-id/${id}`)) as Label[];
+    }
+
+    async getAllInferredWithModel(imageId: number): Promise<Label[] > {
+        return (await this.http.get<Label[]>(`label/all-inferred/${imageId}`)) as Label[];
     }
 
     async create(body: LabelCreateDto): Promise<Label> {
