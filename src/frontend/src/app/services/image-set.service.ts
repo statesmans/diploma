@@ -1,20 +1,11 @@
 import { Injectable } from "@angular/core";
 import { HttpService } from "../shared/http.service";
-import { ImageSet, ImageSetCreateDto } from "../shared/interfaces";
+import { ImageSet, ImageSetCreateDto, ImageSetUpdateDto } from "../shared/interfaces";
 
 @Injectable()
 export class ImageSetService {
 
     constructor(private http: HttpService) { }
-
-    async getAll(): Promise<ImageSet[]> {
-        return (await this.http.get<ImageSet[]>('image-sets')) as ImageSet[];
-    }
-
-    async getOne(id: number): Promise<ImageSet> {
-        console.log(id)
-        return (await this.http.get<ImageSet>(`image-sets/${id}`)) as ImageSet;
-    }
 
     async create(body: ImageSetCreateDto): Promise<ImageSet> {
         return (await this.http.post<ImageSet>(
@@ -26,6 +17,22 @@ export class ImageSetService {
     async delete(id: number): Promise<ImageSet> {
         return (await this.http.delete<ImageSet>(
             `image-sets/${id}`,
+        )) as ImageSet;
+    }
+
+    async getAll(search?: string): Promise<ImageSet[]> {
+        const query = search ? `search=${search}` : '';
+        return (await this.http.get<ImageSet[]>(`image-sets?${query}`)) as ImageSet[];
+    }
+
+    async getOne(id: number): Promise<ImageSet> {
+        console.log(id)
+        return (await this.http.get<ImageSet>(`image-sets/${id}`)) as ImageSet;
+    }
+
+    async update(id: number, body: ImageSetUpdateDto): Promise<ImageSet> {
+        return (await this.http.patch<ImageSet>(
+            `image-sets/${id}`, body
         )) as ImageSet;
     }
 }

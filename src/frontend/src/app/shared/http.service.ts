@@ -8,19 +8,28 @@ export class HttpService {
         private http: HttpClient,
     ) {}
 
+    private getEndpoint(path: string) {
+        return [this.getBackendEndpoint(), path].join('/');
+    }
+
+    async delete<T>(
+        rawPath: string,
+    ) {
+        const path = this.getEndpoint(rawPath);
+
+        return this.http.delete<T>(path).toPromise();
+    }
+
     async get<T>(rawPath: string) {
         const path = this.getEndpoint(rawPath);
 
         return this.http.get<T>(path).toPromise();
     }
 
-    async post<T>(
-        rawPath: string, 
-        body: Record<string, any>
-    ) {
-        const path = this.getEndpoint(rawPath);
+    getBackendEndpoint() {
+        // return 'https://57jmvwhk-13001.euw.devtunnels.ms';
+        return 'http://localhost:13001';
 
-        return this.http.post<T>(path, body).toPromise();
     }
 
     async patch<T>(
@@ -32,20 +41,13 @@ export class HttpService {
         return this.http.patch<T>(path, body).toPromise();
     }
 
-    async delete<T>(
-        rawPath: string,
+    async post<T>(
+        rawPath: string, 
+        body: Record<string, any>
     ) {
         const path = this.getEndpoint(rawPath);
 
-        return this.http.delete<T>(path).toPromise();
-    }
-
-    getBackendEndpoint() {
-        return 'http://localhost:13001';
-    }
-
-    private getEndpoint(path: string) {
-        return [this.getBackendEndpoint(), path].join('/');
+        return this.http.post<T>(path, body).toPromise();
     }
 }
 

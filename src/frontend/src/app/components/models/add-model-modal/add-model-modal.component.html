@@ -6,11 +6,11 @@
     <!-- <input id="name" type="text" formControlName="name"> -->
     
     <div class="mb-3">
-        <label for="trainSet" class="form-label">Training set* </label>
+        <label for="trainingSet" class="form-label">Training set* </label>
         <select
-            id="trainSet"
+            id="trainingSet"
             class="form-select" 
-            formControlName="trainSet"
+            formControlName="trainingSet"
         >
             <option *ngFor="let imageSet of imageSets" [value]="imageSet.id">
                 {{ imageSet.name }}
@@ -19,18 +19,8 @@
     </div>
 
     <div class="mb-3">
-        <label for="testSet" class="form-label">Test set*</label>
-        <select
-            id="testSet"
-            class="form-select" 
-            formControlName="testSet"
-        >
-            <option *ngFor="let imageSet of imageSets" [value]="imageSet.id">
-                {{ imageSet.name }}
-            </option>
-        </select>
+        <div #jsonEditorContainer style="height: 400px;"></div>
     </div>
-
 
     <button 
         [disabled]="modelForm.invalid"

@@ -34,4 +34,10 @@ export class ImageEntity {
     @OneToOne(() => LabelEntity, label => label.Image)
     ManualLabel!: LabelEntity;
 
+    @Column({
+        type: 'datetime',
+        nullable: false,
+        default: () => 'CURRENT_TIMESTAMP',
+    })
+    createdAt!: Date;
 }

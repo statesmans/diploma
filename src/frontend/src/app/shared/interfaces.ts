@@ -1,8 +1,10 @@
 export interface Model {
     id: string,
     name: string,
-    trainingSet: number | null,
-    testSet: number | null,
+    trainingSet: number,
+    hyperparameter: Record<string, any> | null
+    TrainingSet?: ImageSet,
+    
 }
 
 export interface ModelCreateDto {
@@ -26,6 +28,11 @@ export interface ImageSet {
 
 export interface ImageSetCreateDto {
     name: string
+}
+
+export interface ImageSetUpdateDto {
+    name?: string;
+    selectedModel?: string | null;
 }
 
 export interface LabelCreateDto {
@@ -56,7 +63,7 @@ export interface Image {
 
 export interface LabelInterface {
     vid?: string;
-    xy: [number, number, number, number, number];
+    xy: [number, number, number, number];
     confidence?: number;
 }
 
@@ -65,21 +72,28 @@ export interface DefectClass {
     name: string;
 }
 
-// export interface LabelsInterface {
-//     [key: string]: LabelInterface;
-// }
-
-// export interface LabelData {
-//     labels?: LabelInterface;
-// }
+export enum LabelClassification {
+    Unclassified = 0,
+    OK = 1,
+    Defect = 2,
+}
 
 export interface Label {
     id: number;
     imageId: number;
     confidence: number;
-    // classification: number;
+    classification: LabelClassification;
     defectClassId: number;
     labelData: LabelInterface;
     modelUuid: string;
     Model?: Model
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+}
+
+export interface CreateDefectClassDto {
+    name: string;
 }

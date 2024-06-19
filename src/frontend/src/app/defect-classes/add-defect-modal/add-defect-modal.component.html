@@ -1,0 +1,15 @@
+<div [formGroup]="defectForm" class="container">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name *</label>
+        <input type="text" class="form-control"  formControlName="name" id="name">
+    </div>
+
+    <button 
+        [disabled]="defectForm.invalid"
+        type="submit" 
+        class="btn btn-primary" 
+        (click)="submit()"
+    >Save</button>
+</div>
+
+

@@ -4,12 +4,12 @@ import { ImageSetsComponent } from './components/image-sets/image-sets.component
 import { ImageSetComponent } from './components/image-set/image-set.component';
 import { ImageSetResolver } from './components/image-set/image-set.resolver';
 import { ModelsComponent } from './components/models/models.component';
+import { DefectClassesComponent } from './defect-classes/defect-classes.component';
 
 
 const routes: Routes = [
     {
         path: 'image-sets',
-        // pathMatch: 'full'
         component: ImageSetsComponent,
     },
     {
@@ -20,6 +20,10 @@ const routes: Routes = [
     {
         path: 'models',
         component: ModelsComponent,
+    },
+    {
+        path: 'defects',
+        component: DefectClassesComponent,
     }
 ];
 

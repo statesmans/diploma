@@ -1,3 +1,4 @@
-<div class="img-container">
+<div class="img-container" [ngClass]="{'green': labelClassification === LabelClassification.OK, 'red': labelClassification === LabelClassification.Defect}">
+    <input type="checkbox" class="checkbox" [(ngModel)]="isSelected" (change)="toggleImageSelection($event)">
     <img [src]="imageUrl" (click)="openImageDataModal()">
 </div>

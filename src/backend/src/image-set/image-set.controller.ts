@@ -1,21 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ImageSetService } from './image-set.service';
 import { ImageSetEntity } from './image-set.entity';
-import { ImageSetDto } from './dto/imageSetCreate.dto';
+import { ImageSetCreateDto, ImageSetUpdateDto } from './dto/imageSetCreate.dto';
+import { ImageSetQueryDto } from './dto/image-set-query.dto';
 
 @Controller('image-sets')
 export class ImageSetController {
   constructor(private readonly imageSetService: ImageSetService) {}
 
   @Get()
-  async getAll(): Promise<ImageSetEntity[]> {
-    return await this.imageSetService.getAll();
+  async getAll(
+    @Query() query: ImageSetQueryDto
+  ): Promise<ImageSetEntity[]> {
+    console.log('query', query);
+    return await this.imageSetService.getAll(query);
   }
 
   @Post()
   async create(
-    @Body() dto: ImageSetDto, 
-  ): Promise<ImageSetEntity[]> {
+    @Body() dto: ImageSetCreateDto, 
+  ): Promise<ImageSetEntity> {
     return await this.imageSetService.create(dto);
   }
 
@@ -26,10 +30,10 @@ export class ImageSetController {
     return await this.imageSetService.findOne(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   async update(
     @Param('id') id: number,
-    @Body() dto: ImageSetDto, 
+    @Body() dto: ImageSetUpdateDto, 
   ): Promise<ImageSetEntity> {
     return await this.imageSetService.update(id, dto);
   }

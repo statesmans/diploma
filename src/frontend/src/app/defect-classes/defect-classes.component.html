@@ -1,0 +1,45 @@
+<div class="d-flex justify-content-end mb-4">
+    <div class="btn btn-primary d-flex align-center w-fit" (click)="openAddModal()">
+        Create defect class 
+        <mat-icon aria-hidden="false" class="ml-3" fontIcon="add"></mat-icon>
+    </div>
+</div>
+
+<table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">
+        Name
+      </th>
+      <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by created At date">
+            Created At
+        </th>
+        <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'dd.MM.yyyy'}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="controls">
+        <th mat-header-cell *matHeaderCellDef></th>
+
+        <td mat-cell *matCellDef="let element"  class="d-flex justify-content-end h-14">
+            <div *ngIf="!protectedDefectIds.includes(element.id)" class="d-flex align-center">
+                <button mat-button [matMenuTriggerFor]="menu">
+                    <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="more_vert"></mat-icon>
+                </button>
+    
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="openDeleteModal(element.id)">Delete</button>
+                </mat-menu>
+            </div>
+
+        </td>
+
+    </ng-container>
+
+  
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>

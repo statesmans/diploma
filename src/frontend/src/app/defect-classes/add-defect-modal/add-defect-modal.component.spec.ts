@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FabricComponent } from './image-data.component';
+import { AddDefectModalComponent } from './add-defect-modal.component';
 
-describe('FabricComponent', () => {
-  let component: FabricComponent;
-  let fixture: ComponentFixture<FabricComponent>;
+describe('AddDefectModalComponent', () => {
+  let component: AddDefectModalComponent;
+  let fixture: ComponentFixture<AddDefectModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FabricComponent]
+      imports: [AddDefectModalComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(FabricComponent);
+    fixture = TestBed.createComponent(AddDefectModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -6,7 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { HttpService } from "./shared/http.service";
 import { MatTableModule } from "@angular/material/table";
-import { MatSelectModule } from '@angular/material/select';
+import { MatFormField, MatSelectModule } from '@angular/material/select';
 import { MatMenuModule } from "@angular/material/menu";
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -17,21 +17,29 @@ import { AppRoutingModule } from "./app-routing,module";
 import { ImageSetsComponent } from "./components/image-sets/image-sets.component";
 import { ImageSetComponent } from "./components/image-set/image-set.component";
 import { SidebarComponent } from "./components/sidebar/sidebar.component";
-import { HttpClientModule } from "@angular/common/http";
+import { HTTP_INTERCEPTORS, HttpClientModule } from "@angular/common/http";
 import { ImageSetService } from "./services/image-set.service";
 import { ImageService } from "./services/image.service";
 import { ModelsComponent } from "./components/models/models.component";
 import { ModelService } from "./services/model.service";
 import { ModalConfirmComponent } from "./libs/components/confirm-modal/confirm-modal.component";
 import { AddModelModalComponent } from "./components/models/add-model-modal/add-model-modal.component";
-import { ReactiveFormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { AddImageSetModalComponent } from "./components/image-sets/add-image-set-modal/add-image-set-modal.component";
 import { ImageComponent } from "./image/image.component";
 import { ImagesListComponent } from "./images-list/images-list.component";
-import { ImageDataComponent } from "./image-data/image-data.component";
+import { ImageDataModalComponent } from "./image-data-modal/image-data-modal.component";
 import { LabelService } from "./services/label.service";
 import { DefectClassService } from "./services/defect-class.service";
 import { ToastrModule } from "ngx-toastr";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatPaginatorModule } from "@angular/material/paginator";
+import { SelectionService } from "./services/selection.service";
+import { DefectClassesComponent } from "./defect-classes/defect-classes.component";
+import { AddDefectModalComponent } from "./defect-classes/add-defect-modal/add-defect-modal.component";
+import { ErrorInterceptor } from "./shared/error.interceptor";
+
 
 @NgModule({
     declarations: [
@@ -45,7 +53,9 @@ import { ToastrModule } from "ngx-toastr";
         AddImageSetModalComponent,
         ImageComponent,
         ImagesListComponent,
-        ImageDataComponent,
+        ImageDataModalComponent,
+        DefectClassesComponent,
+        AddDefectModalComponent
     ],
     imports: [
         BrowserAnimationsModule,
@@ -60,7 +70,11 @@ import { ToastrModule } from "ngx-toastr";
         MatSelectModule,
         MatIconModule,
         MatProgressSpinnerModule,
-        MatTabsModule
+        MatTabsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        MatPaginatorModule,
     ],
     providers: [
         HttpService,
@@ -68,7 +82,10 @@ import { ToastrModule } from "ngx-toastr";
         ImageService,
         ModelService,
         LabelService,
-        DefectClassService
+        DefectClassService,
+        SelectionService,
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+
     ],
 
     bootstrap: [AppComponent],

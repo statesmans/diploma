@@ -5,7 +5,7 @@ import { ModelEntity } from 'src/models/models.entity';
 
 export enum LabelClassification {
     Unclassified = 0,
-    Ok = 1,
+    OK = 1,
     Defect = 2,
 }
 

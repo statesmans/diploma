@@ -10,8 +10,6 @@ import { ConfigModule } from './config/config.module';
 import { ModelsModule } from './models/models.module';
 import { ImageModule } from './image/image.module';
 import { LabelModule } from './label/label.module';
-import { FileModule } from './file/file.module';
-import { AzureStorageModule } from '@nestjs/azure-storage';
 import { AzureService } from './azure/azure.service';
 import { ImagesController } from './image/images/images.controller';
 import { DefectClassModule } from './defect-class/defect-class.module';
@@ -37,8 +35,6 @@ import { DefectClassModule } from './defect-class/defect-class.module';
       }),
       inject: [ConfigService],
     }),
-
-    FileModule,
     ImageSetModule,
     ModelsModule,
     LabelModule,

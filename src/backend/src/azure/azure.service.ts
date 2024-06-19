@@ -16,24 +16,20 @@ import { uuid } from 'uuidv4';
         this.containerName = this.configService.azure.containerName || 'default';
     } 
 
-	private async getBlobClient(imageName: string): Promise<BlockBlobClient> {
+	private getBlobClient(blobName: string): BlockBlobClient {
 		const containerClient = this.blobInstance.getContainerClient(this.containerName);
 
-		const blockBlobClient = containerClient.getBlockBlobClient(imageName); 
+		const blockBlobClient = containerClient.getBlockBlobClient(blobName); 
 
 		return blockBlobClient; 
 	} 
     
     async uploadFile(
         buffer: Buffer,
-        uuidFile: string,
-        filename: string,
+        azureBlobname: string
     ): Promise<void> {
-        try {
-            const azureFilename = this.getAzureFilename(filename, uuidFile);
-            console.log('upload', azureFilename)
-    
-            const blockBlobClient = await this.getBlobClient(azureFilename);
+        try {    
+            const blockBlobClient = this.getBlobClient(azureBlobname);
     
             await blockBlobClient.uploadData(buffer);
 
@@ -43,12 +39,9 @@ import { uuid } from 'uuidv4';
     }
 
     async createAzureFileStream(
-        filename: string,
-        uuidFile: string
+        azureBlobname: string
     ): Promise<NodeJS.ReadableStream> {
-        const azureFilename = this.getAzureFilename(filename, uuidFile);
-
-        const blockBlobClient = await this.getBlobClient(azureFilename);
+        const blockBlobClient = this.getBlobClient(azureBlobname);
 
         const blob = await blockBlobClient.download(undefined, undefined, { maxRetryRequests: 10 });
 
@@ -56,11 +49,9 @@ import { uuid } from 'uuidv4';
     }
 
     async deleteFile(
-        uuidFile: string,
-        filename: string
+        azureBlobName: string
     ): Promise<void> {
-        const azureFilename = this.getAzureFilename(filename, uuidFile);
-        const blockBlobClient = await this.getBlobClient(azureFilename);
+        const blockBlobClient = this.getBlobClient(azureBlobName);
 
         await blockBlobClient.deleteIfExists();
     }

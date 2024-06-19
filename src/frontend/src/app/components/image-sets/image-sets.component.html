@@ -1,11 +1,18 @@
 
 <div>
+<div class="image-sets-header">
   <div class="add-btn" (click)="openAddModal()">
     <div class="btn btn-primary">
         Add new image set 
         <mat-icon aria-hidden="false" class="ml-3" fontIcon="add"></mat-icon>
     </div>
   </div>
+
+  <mat-form-field class="example-full-width">
+    <mat-label>Search by name</mat-label>
+    <input [formControl]="searchControl" matInput>
+  </mat-form-field>
+</div>
 
   <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
 
@@ -21,6 +28,13 @@
         Selected model
       </th>
       <td mat-cell *matCellDef="let element"> {{element?.SelectedModel?.name || '-'}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="imagesCount">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by Selected model">
+        Images count
+      </th>
+      <td mat-cell *matCellDef="let element"> {{element?.imagesCount || 0 }} </td>
     </ng-container>
 
     <ng-container matColumnDef="controls">

@@ -23,9 +23,6 @@ export class ImageSetEntity {
     @JoinColumn([{ name: 'selected_model', referencedColumnName: 'id' }])
     readonly SelectedModel!: ModelEntity;
 
-    @OneToMany(() => ModelEntity, model => model.testSet)
-    readonly models!: ModelEntity[];
-
     @OneToMany(() => ModelEntity, model => model.trainingSet)
     readonly trainingSetModels!: ModelEntity[];
 }

@@ -3,6 +3,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 // import { DataResponse, asResponse } from 'src/lib/data-response';
 import { ImageEntity } from './image.entity';
 import { ImageService } from './image.service';
+import { ImageQueryDto } from './dto/image-query.dto';
+import { IPaginated } from 'src/interfaces';
 
 @Controller('image')
 export class ImageController {
@@ -29,9 +31,12 @@ export class ImageController {
 
     @Get(':imageSetId')
     async getAll(
-        @Param('imageSetId') imageSetId: number
-    ): Promise<ImageEntity[]> {
-        const images = await this.imageService.findAllByImageSetId(imageSetId);
+        @Param('imageSetId') imageSetId: number,
+        @Query() query: ImageQueryDto,
+    ): Promise<IPaginated<ImageEntity>> {
+        const images = await this.imageService.findAllByImageSetId(imageSetId, query);
         return images;
     }
+
+    
 }

@@ -13,16 +13,13 @@ export class ModelEntity {
   name!: string;
 
   @Column({
-      type: 'integer',
-      nullable: true,
-  })
-  testSet!: number | null;
-
-  @Column({
     type: 'integer',
     nullable: true,
   })
   trainingSet!: number | null;
+
+  @Column({ type: 'simple-json', nullable: true })
+  hyperparameter!: NonNullable<unknown> | null;
 
   @Column({
     type: 'datetime',

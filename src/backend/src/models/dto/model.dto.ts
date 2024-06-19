@@ -1,47 +1,75 @@
-
+import { Type } from "class-transformer";
+import { IsInt, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from "class-validator";
 import * as Joi from "joi";
-import { JoiSchema } from "nestjs-joi";
 
 export class ModelCreateDto {
-    @JoiSchema(Joi.string().required())
+    @IsString()
     name: string;
 
-    @JoiSchema(Joi.number().default(null))
+    @IsNumber()
+    @Type(() => Number)
     trainingSet: number | null;
-
-    @JoiSchema(Joi.number().default(null))
-    testSet: number | null;
 }
 
-export const ModelCreateSchemaDto = Joi.object({
-    name: Joi.string().required(),
-    trainingSet: Joi.number().allow(null),
-    testSet: Joi.number().allow(null),
-});
+export class HyperparameterDto {
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    batch_size?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    epochs?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Min(0.1)
+    @Max(1)
+    train_size_coeficient?: number;
+
+    @IsOptional()
+    @IsInt()
+    target_image_size?: number;
+
+    @IsOptional()
+    @IsString()
+    YOLO_model_name?: string;
+
+    @IsOptional()
+    @Type(() => Number)
+    fine_tune_YOLOv8?: number;
+}
 
 export class ModelUpdateDto {
-    @JoiSchema(Joi.string().optional())
-    name: string;
+    @IsOptional()
+    @IsString()
+    name?: string;
+  
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    trainingSet?: number | null;
+  
+    @IsOptional()
+    @IsString()
+    trainingResultFileUuid?: string | null;
 
-    @JoiSchema(Joi.number().allow(null))
-    trainingSet: number | null;
+    @IsOptional()
+    @IsObject()
+    @ValidateNested()
+    @Type(() => HyperparameterDto)
+    hyperparameter?: HyperparameterDto | null;
+  }
 
-    @JoiSchema(Joi.number().allow(null))
-    testSet: number | null;
 
-    @JoiSchema(Joi.string().allow(null))
-    trainingResultFileUuid: string | null;
-}
-
-export const ModelUpdateSchemaDto = Joi.object({
-    name: Joi.string().optional(),
-    trainingSet: Joi.number().allow(null),
-    testSet: Joi.number().allow(null),
-});
 
 export interface Hyperparameters {
-    yolo_fine_tune: 1 | 0
-
+    batch_size?: number;
+    epochs?: number;
+    train_size_coeficient?: number;
+    target_image_size?: number;
+    YOLO_model_name?: string;
 }
 
 export interface TrainingManifest {
@@ -60,13 +88,19 @@ export interface TrainingManifest {
     }
 }
 
-export interface InferenceManifest {
-    model_uuid: string,
-    images: {
-        [key: string]: string,
-    };
+export interface InferenceManifest extends Omit<TrainingManifest, 'labels'>  {}
+
+interface InferenceLabelDataResponse {
+    // Defect name (OK is also defect)
+    [key: string]: {
+        bbox: [number, number, number, number],
+        confidence: number,
+        defect_class_id: number
+    }
 }
 
 export interface InferenceResponse {
+    // uuid_file of the image
+    [key: string]: InferenceLabelDataResponse
 
 }

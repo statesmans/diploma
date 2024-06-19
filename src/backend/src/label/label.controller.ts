@@ -10,13 +10,6 @@ export class LabelController {
         private labelService: LabelService,
     ) {}
 
-    @Get('/image-id/:imageId')
-    async getOneByImageId(
-      @Param('imageId') imageId: number,
-    ): Promise<LabelEntity> {
-      return await this.labelService.findImageId(imageId);
-    }
-
     @Get('/manual/image-id/:imageId')
     async getManualByImageId(
       @Param('imageId') imageId: number,
@@ -29,13 +22,6 @@ export class LabelController {
       @Param('imageId') imageId: number,
     ): Promise<LabelEntity[]> {
       return await this.labelService.getInferredLabelsByImageId(imageId);
-    }
-
-    @Get('/all-inferred/:imageId')
-    async getAllInferredByImageAndModelId(
-      @Param('imageId') imageId: number,
-    ): Promise<LabelEntity[]> {
-      return await this.labelService.getInferredLabelsGroupedByModel(imageId);
     }
   
     @Post()

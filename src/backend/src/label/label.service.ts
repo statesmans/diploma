@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LabelEntity, LabelType } from './label.entity';
+import { LabelClassification, LabelEntity, LabelType } from './label.entity';
 import { Repository } from 'typeorm';
 import { CreateLabelDto, UpdateLabelDto } from './dto/label.dto';
 import { ImageService } from '../image/image.service';
@@ -22,12 +22,6 @@ export class LabelService {
         return await this.labelRepository.save(label);
     }
 
-    async findImageId(imageId: number): Promise<LabelEntity> {
-        return await this.labelRepository.findOneBy({
-            imageId
-        });
-    }
-
     async getManualLabelByImageId(imageId: number): Promise<LabelEntity> {
         return await this.labelRepository
             .createQueryBuilder('label')
@@ -43,16 +37,6 @@ export class LabelService {
             .andWhere('label.image_id = :imageId', { imageId })
             .getMany();
     }
-
-    async getInferredLabelsGroupedByModel(imageId: number): Promise<LabelEntity[]> {
-
-        return await this.labelRepository
-            .createQueryBuilder('label')
-            .leftJoinAndSelect('label.Model', 'model')
-            .where('label.type = :labelType', { labelType: '2' })
-            .getMany();
-    }
-
 
     async findAll(): Promise<LabelEntity[]> {
         return await this.labelRepository.find();
@@ -71,6 +55,22 @@ export class LabelService {
     }
 
     async update(id: number, updateLabelDto: UpdateLabelDto): Promise<LabelEntity> {
+        
+        if ('defectClassId' in updateLabelDto) {
+            if (updateLabelDto.defectClassId === LabelClassification.OK) {
+                updateLabelDto.classification = LabelClassification.OK;
+            } else {
+                updateLabelDto.classification = LabelClassification.Defect;
+            }
+            
+        }
+
+        if ('labelData' in updateLabelDto) {
+            if (!updateLabelDto?.labelData?.xy?.length) {
+                updateLabelDto.classification = LabelClassification.Unclassified
+
+            }
+        }
 
         await this.labelRepository.update(id, updateLabelDto);
         return this.labelRepository.findOneOrFail({

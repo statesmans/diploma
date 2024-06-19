@@ -1,36 +1,78 @@
 <div class="">
     <div class="controls">
-        <div class="training__controls flex flex-col">
-            <button class="btn btn-primary mb-2">
-                Start inference
-            </button>
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <mat-form-field >
+                    <mat-label>Image set name</mat-label>
+                    <input matInput  [formControl]="imageSetName" >
+                    
+                </mat-form-field>
+                <div class="left-side-controls mb-2">
+                    <button 
+                        *ngIf="selectedModel.value"
+                        [disabled]="!selectedModel.value" 
+                        class="btn btn-primary inference-btn mr-2 "
+                        (click)="startInference()"
+                    >
+                        Predict image-set
+                    </button>
+                    <input
+                        #input
+                        (change)="uploadFiles($event)"
+                        type="file"
+                        class="full-input"
+                        e2e="file-input"
+                        accept=".jpg, .jpeg, .png"
+                        multiple
+                    />
+                    <button class="btn btn-primary" (click)="input.click()">
+                        Load images
+                    </button>
+                </div>
+                <div>
+                    <mat-form-field class="w-full">
+                        <mat-label>Select model</mat-label>
+                        <mat-select [formControl]="selectedModel">
+            
+                            <mat-option *ngFor="let model of models" [value]="model.id">{{model.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-label>Manual classification</mat-label>
+                        <mat-select [formControl]="manualClassification" placeholder="All">
+            
+                            <mat-option *ngFor="let classification of manualClassifications" [value]="classification.value">{{classification.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="selectedModel.value" class="w-full">
+                        <mat-label>Automatic classification</mat-label>
+                        <mat-select [formControl]="automaticClassification" placeholder="All">
+            
+                            <mat-option *ngFor="let classification of automaticClassifications" [value]="classification.value">{{classification.name}}</mat-option>
+
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </div>
+            
+            <div class="d-flex flex-col">
+                <button 
+                    [disabled]="canSave"
+                    class="btn btn-primary mb-2"
+                    (click)="save()"
+                >
+                    Save
+                </button>
+                <mat-form-field class="example-full-width">
+                    <mat-label>Search by name</mat-label>
+                    <input [formControl]="searchControl" matInput >
+                </mat-form-field>
+            </div>
+
         </div>
 
-        <input
-            #input
-            (change)="uploadFiles($event)"
-            type="file"
-            class="full-input"
-            e2e="file-input"
-            accept=".jpg, .jpeg, .png"
-            multiple
-        />
-        <button class="btn btn-primary" (click)="input.click()">
-            Load images
-        </button>
-
-        <mat-form-field>
-            <mat-label>Select model</mat-label>
-            <!-- <mat-option selected></mat-option> -->
-            <mat-select [(value)]="selectedModel">
-
-                <mat-option *ngFor="let model of models" [value]="model.id">{{model.name}}</mat-option>
-            </mat-select>
-        </mat-form-field>
-
-        <button class="btn btn-primary">
-            Save
-        </button>
     </div>
-    <app-images-list [images]="images"></app-images-list>
+    <app-images-list [images]="images" (onPaginationChanged)="onImagesPaginationChanged($event)" (updateImages)="updateImages()" [defaultPageSize]="imagesPageSize"></app-images-list>
 </div>

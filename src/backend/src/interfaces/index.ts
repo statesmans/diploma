@@ -1,0 +1,1 @@
+export { IPaginated } from './paginated.interface';

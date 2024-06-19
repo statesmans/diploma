@@ -40,6 +40,6 @@ export class UpdateLabelDto {
     @IsOptional()
     defectClassId?: number | null;
 
-    @IsJSON()
+    @IsOptional()
     labelData?: LabelInterface;
 }

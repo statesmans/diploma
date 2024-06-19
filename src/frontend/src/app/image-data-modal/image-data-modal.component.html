@@ -1,0 +1,89 @@
+<div>
+  <header class="header">Filename: {{image.filename.split('.')[0]}}</header>
+  <mat-tab-group (selectedTabChange)="toggleTab($event)" mat-stretch-tabs="false" mat-align-tabs="center">
+    <mat-tab label="Manual label">
+      <div class="canvas_container" style=" position: relative;">
+        <canvas id="imageCanvas_0"></canvas>
+      </div>
+      <div class="d-flex justify-content-between items-end mt-4">
+        <div class="d-flex flex-col gap-2">
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" (click)="clearRectangles()">Remove Rectangle</button>
+            <button class="btn btn-primary" (click)="markAsOk()">Mark as OK</button>
+            <button [disabled]="!imageSet?.selectedModel" class="btn btn-primary" (click)="predictImage()">Predict this image</button>
+          </div>
+          <mat-form-field>
+            <mat-label>Select defect class</mat-label>
+            <mat-select [formControl]="selectedDefectClassId">
+          
+                <mat-option *ngFor="let defect of defectClassesWithoutOk" [value]="defect.id">{{defect.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <button 
+          [disabled]="selectedDefectClassId.invalid || selectedDefectClassId.untouched" 
+          class="btn btn-primary h-fit mb-3 w-48" 
+          (click)="saveLabel()"
+        >Save</button>
+      </div>
+     
+    </mat-tab>
+    <mat-tab label="Inferred label">
+      <div>
+        <div class="canvas_container" style="position: relative;">
+          <canvas id="imageCanvas_1"></canvas>
+        </div>
+        <div class="d-flex justify-content-start items-start mt-4">
+          <mat-form-field>
+            <mat-label>Select model to see defects</mat-label>
+            <mat-select [formControl]="selectedModel">
+          
+                <mat-option *ngFor="let model of modelsThatPredictedImage" [value]="model.id">{{model.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button [disabled]="!automaticLabels.length" class="btn btn-primary h-14 ml-2 mt-0" (click)="drawAllAutomaticRect()">Draw all labels</button>
+        </div>
+
+      </div>
+
+      <div *ngIf="automaticLabels.length">
+        <table mat-table [dataSource]="automaticLabelsDataSource" matSort class="mat-elevation-z8">
+    
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">
+              Name
+            </th>
+            <td mat-cell *matCellDef="let element" (click)="drawSpecificRect(element)"> {{element.defectName}} </td>
+          </ng-container>
+    
+          <ng-container matColumnDef="confidence">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">
+              Confidence
+            </th>
+            <td mat-cell *matCellDef="let element" (click)="drawSpecificRect(element)"> {{element.confidence}} </td>
+          </ng-container>
+    
+          <ng-container matColumnDef="controls">
+            <th mat-header-cell *matHeaderCellDef></th>
+    
+            <td mat-cell *matCellDef="let element" class="d-flex justify-content-end h-14">
+                <button mat-button [matMenuTriggerFor]="menu">
+                    <mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="more_vert"></mat-icon>
+                </button>
+    
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="openLabelDeleteModal(element.id)">Delete</button>
+                </mat-menu>
+            </td>
+    
+        </ng-container>
+        
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+  
+  
+</div>

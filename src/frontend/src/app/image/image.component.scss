@@ -10,3 +10,24 @@ img {
         } 
     }
 }
+
+.img-container {
+    cursor: pointer;
+    position: relative;
+
+    .checkbox {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+    }
+}
+
+
+.green {
+    box-shadow: 0 0 0 4px green;
+}
+
+.red {
+    box-shadow: 0 0 0 4px red;
+}
+

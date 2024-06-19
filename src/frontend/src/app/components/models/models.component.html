@@ -1,9 +1,16 @@
 <div class="container">
-    <div class="add-btn ">
-        <div class="btn btn-primary" (click)="openAddModal()">
-            Add new model 
-            <mat-icon aria-hidden="false" class="ml-3" fontIcon="add"></mat-icon>
+    <div class="models-header">
+        <div class="add-btn ">
+            <div class="btn btn-primary d-flex align-center w-fit" (click)="openAddModal()">
+                Add new model 
+                <mat-icon aria-hidden="false" class="ml-3" fontIcon="add"></mat-icon>
+            </div>
         </div>
+
+        <mat-form-field class="example-full-width">
+            <mat-label>Search by name</mat-label>
+            <input [formControl]="searchControl" matInput >
+        </mat-form-field>
     </div>
 
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
@@ -14,32 +21,25 @@
           </th>
           <td mat-cell *matCellDef="let element"> {{element.name}} </td>
         </ng-container>
-      
-        <ng-container matColumnDef="testSet">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by test image set">
-            Test image set
-          </th>
-          <td mat-cell *matCellDef="let element"> {{element.testSet}} </td>
-        </ng-container>
 
-        <ng-container matColumnDef="trainingSet">
+        <ng-container matColumnDef="trainingSet" >
             <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by training image set">
                 Training image set
             </th>
-            <td mat-cell *matCellDef="let element"> {{element.trainingSet}} </td>
+            <td class="imageSetHover" mat-cell *matCellDef="let element" (click)="goToTrainingSet(element.trainingSet)"> {{element?.TrainingSet?.name || '-'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="createdAt">
             <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by created At date">
                 Created At
             </th>
-            <td mat-cell *matCellDef="let element"> {{element.createdAt}} </td>
+            <td mat-cell *matCellDef="let element"> {{element.createdAt | date:'dd.MM.yyyy'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="controls">
             <th mat-header-cell *matHeaderCellDef></th>
 
-            <td mat-cell *matCellDef="let element">
+            <td mat-cell *matCellDef="let element" class="d-flex justify-content-end h-14">
                 <mat-progress-spinner
                     *ngIf="trainingStatuses[element.id]"
                     class="example-margin"

@@ -1,4 +1,4 @@
-import { Controller, Get, Next, Param, Res } from '@nestjs/common';
+import { Controller, Delete, Get, Next, Param, Query, Res } from '@nestjs/common';
 import { ImagesService } from './images.service';
 import { ImageService } from '../image.service';
 import { NextFunction } from 'express';
@@ -9,21 +9,11 @@ export class ImagesController {
     constructor (
         private imagesService: ImagesService,
         private imageService: ImageService,
-    ) {
+    ) {}
 
-    }
-
-    @Get(':imageSetId')
-    getAllImagesByImageSetId(
-        @Param('imageSetId') imageSetId: number
-    ) {
-        this.imagesService.getAllByImageSetId(imageSetId);
-    }
-
-    @Get(':uuidFile/:filename')
+    @Get(':uuidFile')
     async downloadCompressedFileRoute(
         @Param('uuidFile') uuidFile: string,
-        @Param('filename') filename: string,
         @Res() res: Response,
         @Next() next: NextFunction,
     ): Promise<void> {
@@ -40,11 +30,15 @@ export class ImagesController {
             next(err);
         });
 
-
-        // const cacheImagesSeconds = this.CACHE_IMAGES_HOURS * 60 * 60;
-
-        // res.setHeader('Cache-Control', `max-age=${cacheImagesSeconds}`);
         stream.pipe(res);
     }
 
+
+    @Delete('bulk')
+    async deleteBulk(
+        @Query('ids') ids: Array<string | number>,
+        @Query('imageSetId') imageSetId: number,
+    ) {
+        return await this.imagesService.deleteImageBulk(ids, imageSetId);
+    }
 }

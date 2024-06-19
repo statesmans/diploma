@@ -1,7 +1,27 @@
-<div class="images-list">
-    <div *ngFor="let image of images">
-        <div>
-            <app-image [image]="image"></app-image>
+<div class="flex flex-col">
+    <div class="d-flex justify-content-end h-10">
+        <div class="mr-2">
+            <button [ngStyle]="{'display': showDeleteBtn ? 'block' : 'none'}" (click)="deleteSelectedImages()" class="btn btn-primary">Delete selected</button>
+        </div>
+        <div class="select-all-block">
+            <label for="select_all">Select all</label>
+            <input id="select_all" type="checkbox" class="checkbox" [(ngModel)]="isAllSelected" (change)="selectAll($event)">
+       </div>
+    </div>
+    
+    <div class="images-list pb-2">
+        <div *ngFor="let image of images.data">
+            <div>
+                <div class="image-block">
+                    <app-image (onImageLabelUpdate)="handleImagesUpdate()" [image]="image"></app-image>
+                </div>
+            </div>
         </div>
     </div>
+    <mat-paginator [length]="images.total"
+        [pageSize]="defaultPageSize"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        aria-label="Select page"
+        (page)="handlePageEvent($event)">
+    </mat-paginator>
 </div>

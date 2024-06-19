@@ -1,6 +1,6 @@
 from azure_adapter import download_file_and_save, upload_model, get_blob_name, download_model_file
 from typing import Sequence
-from interfaces.index import TrainingManifest, InferenceManifest
+from interfaces.index import TrainingManifest, InferenceManifest, Hyperparameters
 from ultralytics import YOLO
 
 from PIL import Image
@@ -14,61 +14,77 @@ import os
 
 
 def augment_and_process_image(image, bbox, target_size):
-    print('input augment_and_process_image', bbox)
-
-
-
-    transform = A.Compose([
-        A.HorizontalFlip(p=0.5),
-        A.RandomBrightnessContrast(p=0.2),
-        A.Rotate(limit=10, p=0.5),
-        A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=10, p=0.5)
-    ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
-    print('after transform', bbox)
     
-    # Apply augmentation
-    print('before augmented', bbox)
+    try:
+        bbox = [max(0, min(1, v)) for v in bbox]
+        print('After range check', bbox)
 
-    augmented = transform(image=image, bboxes=[bbox], class_labels=[0])
-    image = augmented['image']
-    bbox = augmented['bboxes'][0]
-    print('after bbox = augmented[bboxes][0]', bbox)
+        transform = A.Compose([
+            A.HorizontalFlip(p=0.5),
+            A.RandomBrightnessContrast(p=0.2),
+            A.Rotate(limit=10, p=0.5),
+            A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.2, rotate_limit=10, p=0.5)
+        ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
+        
+        retry_count = 0
+        max_retries = 3
 
-    # Resize while preserving aspect ratio and pad to target size
-    h, w = image.shape[:2]
-    scale = min(target_size[0] / h, target_size[1] / w)
-    new_h, new_w = int(h * scale), int(w * scale)
+        while retry_count < max_retries:
+            augmented = transform(image=image, bboxes=[bbox], class_labels=[0])
     
-    resized_image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-    top = (target_size[0] - new_h) // 2
-    bottom = target_size[0] - new_h - top
-    left = (target_size[1] - new_w) // 2
-    right = target_size[1] - new_w - left
 
-    padded_image = cv2.copyMakeBorder(resized_image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+            if not len(augmented['bboxes']):
+                print(f"Retry {retry_count+1}/{max_retries}: Bounding box removed by augmentation")
+                retry_count += 1
+                return image, bbox
+            
+            image = augmented['image']
     
-    # Adjust bbox after resizing and padding
-    x_center, y_center, bbox_width, bbox_height = bbox
-    x_center = (x_center * new_w + left) / target_size[1]
-    y_center = (y_center * new_h + top) / target_size[0]
-    bbox_width = bbox_width * new_w / target_size[1]
-    bbox_height = bbox_height * new_h / target_size[0]
+        
+            print('After augmented', augmented)
+            image = augmented['image']
+            bbox = augmented['bboxes'][0]
 
-    adjusted_bbox = [x_center, y_center, bbox_width, bbox_height]
+            # Resize while preserving aspect ratio and pad to target size
+            h, w = image.shape[:2]
+            scale = min(target_size[0] / h, target_size[1] / w)
+            new_h, new_w = int(h * scale), int(w * scale)
+            
+            resized_image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
+            top = (target_size[0] - new_h) // 2
+            bottom = target_size[0] - new_h - top
+            left = (target_size[1] - new_w) // 2
+            right = target_size[1] - new_w - left
 
-    return padded_image, adjusted_bbox
+            padded_image = cv2.copyMakeBorder(resized_image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+            
+            # Adjust bbox after resizing and padding
+            x_center, y_center, bbox_width, bbox_height = bbox
+            x_center = (x_center * new_w + left) / target_size[1]
+            y_center = (y_center * new_h + top) / target_size[0]
+            bbox_width = bbox_width * new_w / target_size[1]
+            bbox_height = bbox_height * new_h / target_size[0]
 
-def to_YOLO_format(
+            adjusted_bbox = [x_center, y_center, bbox_width, bbox_height]
+
+            return padded_image, adjusted_bbox
+
+    except Exception as e:
+        print('Error during augmentation:', e)
+        return image, bbox
+
+def normalize_label(
     label_data,
     filename,
     image_path,
 ):
     label_boundary = label_data.split(' ')
-    integer_elements = [int(label_boundary[0])] + [float(element) for element in label_boundary[1:]]
-    if len(integer_elements) != 5:
-        raise ValueError(f"Label data should have 5 elements, but got {len(integer_elements)}")
     
-    class_id, x_top_left, y_top_left, width_box, height_box = integer_elements
+    float_label_data = [float(element) for element in label_boundary]
+    if len(float_label_data) != 4:
+        raise ValueError(f"Label data should have 4 elements, but got {len(float_label_data)}")
+    
+    x_top_left, y_top_left, width_box, height_box = float_label_data
 
     # Ensure bounding box dimensions are positive
     if width_box <= 0 or height_box <= 0:
@@ -89,15 +105,13 @@ def to_YOLO_format(
     # Ensure that all normalized values are within [0, 1]
     if any(val < 0 or val > 1 for val in [x_center, y_center, yolo_width, yolo_height]):
         raise ValueError("Normalized values must be between 0 and 1")
-    print(f"{class_id} {x_center} {y_center} {yolo_width} {yolo_height}\n")
+    print(f"{x_center} {y_center} {yolo_width} {yolo_height}\n")
     # Write the YOLO formatted label to file
-    return [class_id, x_center, y_center, yolo_width, yolo_height]
+    return [x_center, y_center, yolo_width, yolo_height]
 
 
 async def preload_images(manifest: TrainingManifest):
     images = manifest.images.items()
-    
-
 
     for image in images:
         file_uuid, filename = image
@@ -119,7 +133,7 @@ def prepare_and_save_label_and_image(
     target_size
 ):
     image_filename = os.path.splitext(os.path.basename(image_path))[0]
-    print('before  image_label_data = labels[image_filename].label_data')
+    print('before  image_label_data = labels[image_filename].label_data', labels[image_filename])
 
     image_label_data = labels[image_filename].label_data
     print('aftetrr  image_label_data = labels[image_filename].label_data', image_label_data)
@@ -129,7 +143,7 @@ def prepare_and_save_label_and_image(
     print('aftetrr  image_defect_name', image_path)
 
     image = cv2.imread(image_path)
-    bbox_class_id, x_center, y_center, width_box, height_box = to_YOLO_format(image_label_data, image_filename, image_path)
+    x_center, y_center, width_box, height_box = normalize_label(image_label_data, image_filename, image_path)
 
     bbox = [x_center, y_center, width_box, height_box]
 
@@ -154,25 +168,31 @@ def prepare_and_save_label_and_image(
 
     print('before open')
     with open(os.path.join(label_output_path, label_file_name), 'w+') as label_file:
-        print('after open')
+        print('after open', image_label_defect_id)
         print(bbox)
+  
+
 
         for idx, defect_class_id in enumerate(defects):
-            if int(defect_class_id) == bbox_class_id:
+            print(int(defect_class_id), int(image_label_defect_id))
+            if int(defect_class_id) == int(image_label_defect_id):
                 yolo_bbox = [idx] + bbox
+                print('yolo_bbox', yolo_bbox)
                 label_file.write(' '.join(map(str, yolo_bbox)))
 
 
 
-async def prepare_YOLO_dataset(manifest: TrainingManifest):
+async def prepare_dataset(manifest: TrainingManifest, hyperparameters: Hyperparameters):
 
     await preload_images(manifest)
     # Example usage
     dataset_dir = os.getenv('DATASET_DIR')
     image_dir = os.path.join(dataset_dir, 'source')
-    image_paths = [os.path.join(image_dir, img) for img in os.listdir(image_dir) if img.endswith('.jpg')]
+    # List all PNG, JPG, and JPEG images
+    image_paths = [os.path.join(image_dir, img) for img in os.listdir(image_dir) if img.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-    target_size = (512, 512)
+    target_size = (hyperparameters['target_image_size'], hyperparameters['target_image_size'])
+    
     train_output_dir = os.path.join(dataset_dir, 'images/train_processed')
     val_output_dir = os.path.join(dataset_dir, 'images/val_processed')
 
@@ -182,7 +202,7 @@ async def prepare_YOLO_dataset(manifest: TrainingManifest):
     labels = manifest.labels
     defects = manifest.defects
 
-    train_images, val_images = train_test_split(image_paths, train_size=0.8, random_state=42)
+    train_images, val_images = train_test_split(image_paths, train_size=hyperparameters['train_size_coeficient'], random_state=42)
     print(train_images, val_images)
 
     for image_path in train_images:
@@ -251,16 +271,17 @@ def resize_images(directory_path, width, height):
             print(f"Resized image saved to {image_path}")
 
  # Function to process predictions and filter based on defects
-def process_predictions(predictions, model, defect_mapping):
+def process_predictions(predictions, defect_mapping):
+    print('processing predictions', defect_mapping)
+    print('predictions', predictions)
     result = {}
     for res in predictions:
         image_path = res.path
         boxes = res.boxes.xyxy.cpu().numpy()  # Bounding boxes
         labels = res.boxes.cls.cpu().numpy()  # Class labels
         confidences = res.boxes.conf.cpu().numpy()  # Confidence scores
-
         # Get the filename from the image path
-        filename = os.path.basename(image_path)
+        filename = os.path.splitext(os.path.basename(image_path))[0]
 
         if len(confidences) == 0:
             continue
@@ -269,24 +290,30 @@ def process_predictions(predictions, model, defect_mapping):
         defect_confidences = {defect: [] for defect in defect_mapping.values()}
 
         for box, label, confidence in zip(boxes, labels, confidences):
-            label_name = defect_mapping[str(int(label))]
-            if label_name in defect_confidences:
-                defect_confidences[label_name].append((box, confidence))
+            print('for box, label, confidence in zip(boxes, labels, confidences):', box, label, confidence)
 
+            label_id = str(int(label) + 1)
+            label_name = defect_mapping[label_id]
+            print('[label_name]', label_name, label, str(int(label)), defect_mapping)
+            if label_name in defect_confidences:
+                defect_confidences[label_name].append((box, confidence, label_id))
+
+        print('defect_confidences', defect_confidences)
         # Select the most confident labels for each defect
         filtered_defects = {}
         for defect, bbox_conf_list in defect_confidences.items():
             if bbox_conf_list:
                 # Select the bounding box with the highest confidence for this defect
-                best_bbox, best_confidence = max(bbox_conf_list, key=lambda x: x[1])
+                best_bbox, best_confidence, label_id = max(bbox_conf_list, key=lambda x: x[1])
                 filtered_defects[defect] = {
                     'bbox': best_bbox.tolist(),
-                    'confidence': best_confidence
+                    'confidence': best_confidence,
+                    'defect_class_id': label_id
                 }
-
+        print('filtered defects', filtered_defects)
         # If there is any defect other than 'ok', remove 'ok'
-        if any(defect != 'ok' for defect in filtered_defects):
-            filtered_defects.pop('ok', None)
+        if any(defect != 'OK' for defect in filtered_defects):
+            filtered_defects.pop('OK', None)
 
         # Save the filtered defects to the result dictionary
         result[filename] = filtered_defects
@@ -297,10 +324,10 @@ def process_predictions(predictions, model, defect_mapping):
 async def start_YOLO_inference(manifest: InferenceManifest):
     model_uuid = manifest.model_uuid
     images = manifest.images.items()
-
+    print(manifest.defects)
     await preload_images(manifest)
 
-    resize_images(os.path.join(os.getenv('DATASET_DIR'), 'source'), 512, 512)
+    # resize_images(os.path.join(os.getenv('DATASET_DIR'), 'source'), 512, 512)
 
     path_to_save = os.path.join(os.getenv('DATASET_DIR'))
     # print('before +', model_uuid)
@@ -308,12 +335,17 @@ async def start_YOLO_inference(manifest: InferenceManifest):
     # print('before download_file_and_save')
 
     # await download_file_and_save(model_blob_name, model_blob_name, os.getenv('DATASET_DIR'))
-    # await download_model_file(model_uuid, model_blob_name, os.getenv('DATASET_DIR'))
-    model_path = os.path.join(os.getenv('DATASET_DIR'), 'results', 'train', 'weights', 'best.pt')
-    # model_path = os.path.join(path_to_save, model_blob_name)
+    await download_model_file(model_blob_name, model_blob_name, os.getenv('DATASET_DIR'))
+    model_path = os.path.join(path_to_save, model_blob_name)
+    
+    # model_path = os.path.join(os.getenv('DATASET_DIR'), 'results', 'train', 'weights', 'best.pt')
+
+    print('[before load model]', model_path)
 
     # print('before init', model_path)
     model = YOLO(model_path)
+    print('[after load model]')
+
     # print('after init')
     # Define the directory paths
     test_images_dir = os.path.join(os.getenv('DATASET_DIR'), 'source')
@@ -322,7 +354,7 @@ async def start_YOLO_inference(manifest: InferenceManifest):
 
     # Ensure the results directory exists
     os.makedirs(results_dir, exist_ok=True)
-    # print('before predict')
+    print('[before predict]')
 
     # Load the model
     # Make predictions on the test images
@@ -334,9 +366,9 @@ async def start_YOLO_inference(manifest: InferenceManifest):
         save=True  # Save the predictions
     )
 
-   
     # Process and filter the prediction results
-    filtered_results = process_predictions(predicition_results, model, defect_mapping)
+    filtered_results = process_predictions(predicition_results, manifest.defects)
+
 
     # Print the results for each image
     for filename, defects in filtered_results.items():
@@ -344,48 +376,12 @@ async def start_YOLO_inference(manifest: InferenceManifest):
         for defect, info in defects.items():
             print(f"  Defect: {defect}, Confidence: {info['confidence']}, BBox: {info['bbox']}")
 
-#     result = {}
-
-#     # Process and save each prediction
-#     for res in predicition_results:
-#         image_path = res.path
-        
-#         boxes = res.boxes.xyxy.cpu().numpy()  # Bounding boxes
-#         labels = res.boxes.cls.cpu().numpy()  # Class labels
-#         confidences = res.boxes.conf.cpu().numpy()  # Confidence scores
-        
-#         # Get the filename from the image path
-#         filename = os.path.basename(image_path)
-#         print('confidences for filename: ', filename,' ',  confidences)
-#         if len(confidences) == 0: 
-#             return
-#         # Find the index of the highest confidence score
-#         max_confidence_idx = confidences.argmax()
-        
-#         # Get the bounding box and confidence with the highest score
-#         best_bbox = boxes[max_confidence_idx]
-#         best_confidence = confidences[max_confidence_idx]
-        
-#         # Convert numerical label to class name if needed
-#         best_label_name = model.names[int(labels[max_confidence_idx])]
-        
-#         print('The best confidence: ', best_bbox, best_confidence, best_label_name)
-#         print('All the confidences from image: ', confidences)
+    return filtered_results
 
 
-#         # Save to the result dictionary
-#         result[filename] = {
-#             'bbox': best_bbox.tolist(),
-#             'confidence': best_confidence,
-#             'label': best_label_name
-#         }
-
-# # Print or use the result dictionary as needed
-#     print(result)
-
-
-async def start_YOLO_training(model_uuid: str):
+async def start_YOLO_training(model_uuid: str, hyperparameters: Hyperparameters):
     # selecting yolov8n model as base to fine-tune it
+    print('before training start')
     model = YOLO('yolov8n.pt')  
     # enabling using of the GPU
     model.cuda()
@@ -394,64 +390,16 @@ async def start_YOLO_training(model_uuid: str):
     model.train(
         project=os.path.join(os.getenv('DATASET_DIR'), 'results'), # path to result file
         data=os.path.join(os.getenv('DATASET_DIR'), 'dataset.yaml'),  # Path to the data configuration file
-        epochs=200,  # Number of training epochs
-        imgsz=512,  # Image size
+        epochs=hyperparameters['epochs'],  # Number of training epochs
+        imgsz=hyperparameters['target_image_size'],  # Image size
         lr0=0.001
     )
 
-    best_model_path = os.path.join(os.getenv('DATASET_DIR'), 'results', 'weights' , f'best.pt')
+    best_model_path = os.path.join(os.getenv('DATASET_DIR'), 'results', 'train', 'weights' , 'best.pt')
 
     model_blob_name = model_uuid + '.pt'
 
-    # model.save(path_to_save)
-
-    await upload_model(model_blob_name, best_model_path)
-
+    upload_model(model_blob_name, best_model_path)
 
     return model_blob_name
-  
 
-# def crop_and_pad_image(image_path, label, target_size=512, padding_color=(128, 128, 128)):
-#     # Load the image
-#     image = cv2.imread(image_path)
-#     height, width, _ = image.shape
-#     print(label, image.size, height, width)
-#     # Parse the YOLO label
-#     # class_id, x_center, y_center, w, h = map(float, label.strip().split())
-
-#     # # Convert YOLO format to bounding box coordinates
-#     # x_center, y_center, w, h = x_center * width, y_center * height, w * width, h * height
-#     # x1, y1 = int(x_center - w / 2), int(y_center - h / 2)
-#     # x2, y2 = int(x_center + w / 2), int(y_center + h / 2)
-
-#     # # Ensure the coordinates are within the image bounds
-#     # x1 = max(0, x1)
-#     # y1 = max(0, y1)
-#     # x2 = min(width, x2)
-#     # y2 = min(height, y2)
-
-#     # print(f"Bounding box coordinates - x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}")
-#     defect_id, top_left_x, top_left_y, label_width, label_height = label
-#     print(top_left_x, top_left_y, label_width, label_height )
-#     x1, y1 = int(top_left_x), int(top_left_y)
-#     x2, y2 = int(top_left_x + label_width), int(top_left_y + label_height)
-    
-#     # Crop the image using the bounding box
-#     cropped_image = image[y1:y2, x1:x2]
-
-#     # Resize the cropped image to the target size
-#     resized_image = cv2.resize(cropped_image, (target_size, target_size))
-
-#     # Calculate padding
-#     pad_top = (target_size - resized_image.shape[0]) // 2
-#     pad_bottom = target_size - resized_image.shape[0] - pad_top
-#     pad_left = (target_size - resized_image.shape[1]) // 2
-#     pad_right = target_size - resized_image.shape[1] - pad_left
-
-#     # Add padding to the resized image
-#     padded_image = cv2.copyMakeBorder(
-#         resized_image, pad_top, pad_bottom, pad_left, pad_right,
-#         cv2.BORDER_CONSTANT, value=padding_color
-#     )
-
-#     return padded_image
