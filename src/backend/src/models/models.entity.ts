@@ -49,17 +49,10 @@ export class ModelEntity {
 
   @OneToMany(() => ImageSetEntity, imageSet => imageSet.selectedModel)
   readonly imageSets!: ImageSetEntity[];
-  
-  @ManyToOne(() => ImageSetEntity, imageSet => imageSet.models, {
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE',
-  })
-  @JoinColumn([{ name: 'test_set', referencedColumnName: 'id' }])
-  readonly TestSet!: ImageSetEntity;
 
   @OneToMany(() => LabelEntity, label => label.Model)
   Labels: LabelEntity[];
-  // @Column({ type: 'text', nullable: true })
-  // trainingResultFileName!: string;
 
+  @Column({ type: 'text', nullable: true })
+  trainingResultFileName!: string;
 }
