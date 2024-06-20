@@ -15,7 +15,7 @@ export class SidebarComponent {
     private router: Router,
   ) {}
 
-  private navigate(path: string) {
+  navigate(path: string) {
     this.router.navigate([path])
   }
 

@@ -17,18 +17,18 @@ import { FormControl } from '@angular/forms';
   styleUrl: './image-sets.component.scss',
 })
 export class ImageSetsComponent implements OnInit {
-  private dataSource: MatTableDataSource<ImageSet> = new MatTableDataSource([{} as ImageSet]);
-  private displayedColumns: string[] = ['name', 'selectedModel', 'imagesCount', 'controls'];
+  dataSource: MatTableDataSource<ImageSet> = new MatTableDataSource([{} as ImageSet]);
+  displayedColumns: string[] = ['name', 'selectedModel', 'imagesCount', 'controls'];
 
-  private searchControl: FormControl = new FormControl();
-  private searchControlSub$?: Subscription;
+  searchControl: FormControl = new FormControl();
+  searchControlSub$?: Subscription;
   constructor (
     private imageSetService: ImageSetService,
     private modal: NgbModal,
     private router: Router,
   ) {}
 
-  private ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.searchControlSub$?.unsubscribe();
   }
 
@@ -93,8 +93,6 @@ export class ImageSetsComponent implements OnInit {
 
   async updateImageSets(search?: string) {
     const imageSets = await this.imageSetService.getAll(search);
-
-    console.log(imageSets);
 
     this.dataSource = new MatTableDataSource(imageSets);
   }

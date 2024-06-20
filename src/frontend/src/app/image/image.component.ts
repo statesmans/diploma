@@ -13,12 +13,14 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './image.component.scss'
 })
 export class ImageComponent implements OnInit {
-  @Input() private image!: Image;
-  private imageUrl: string | null = null;
-  private isSelected = false;
-  private labelClassification?: LabelClassification;
-  private LabelClassification = LabelClassification;
-  @Output() private onImageLabelUpdate = new EventEmitter();
+  @Input() image!: Image;
+  @Output() onImageLabelUpdate = new EventEmitter();
+
+  imageUrl: string | null = null;
+  isSelected = false;
+  labelClassification?: LabelClassification;
+  LabelClassification = LabelClassification;
+
   constructor (
     private imageService: ImageService,
     private labelService: LabelService,
@@ -27,7 +29,7 @@ export class ImageComponent implements OnInit {
     private selectionService: SelectionService,
   ) {}
 
-  private toggleImageSelection(event: Event) {
+  toggleImageSelection(event: Event) {
     const checkbox = event.target as HTMLInputElement;
     this.selectionService.toggleImageSelection(checkbox.checked, this.image.id);
   }

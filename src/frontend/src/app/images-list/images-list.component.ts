@@ -10,27 +10,33 @@ import { ActivatedRoute } from '@angular/router';
   styleUrl: './images-list.component.scss'
 })
 export class ImagesListComponent implements OnInit{
-  @Input() private defaultPageSize: number = 10;
-  @Input() private images!: PaginatedResponse<Image>
-  private imageSetId?: number;
-  private isAllSelected = false;
-  @Output() private onPaginationChanged = new EventEmitter<PageEvent>();
-  private showDeleteBtn = false;
-  @Output() private updateImages = new EventEmitter();
+  imageSetId?: number;
+
+
+  @Input() defaultPageSize: number = 10;
+  @Input() images!: PaginatedResponse<Image>
+
+  @Output() onPaginationChanged = new EventEmitter<PageEvent>();
+  @Output() updateImages = new EventEmitter();
+
+  isAllSelected = false;
+  showDeleteBtn = false;
+
+
   constructor (
     private selectionService: SelectionService,
     private route: ActivatedRoute,
   ) {}
 
-  private handleImagesUpdate() {
+  handleImagesUpdate() {
     this.updateImages.emit('');
   }
 
-  private handlePageEvent(event: PageEvent) {
+  handlePageEvent(event: PageEvent) {
     this.onPaginationChanged.emit(event);
   }
 
-  private selectAll(event: Event) {
+  selectAll(event: Event) {
     const checkbox = event.target as HTMLInputElement;
 
     this.selectionService.setSelectedAll(checkbox.checked);

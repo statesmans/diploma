@@ -24,33 +24,33 @@ enum ManualDefects {
   styleUrl: './image-data-modal.component.scss'
 })
 export class ImageDataModalComponent implements OnInit, AfterViewInit {
-  private automaticLabels: Label[] = [];
-  private automaticLabelsDataSource!: MatTableDataSource<Label & {
+  automaticLabels: Label[] = [];
+  automaticLabelsDataSource!: MatTableDataSource<Label & {
     defectName: string
   }>;
-  private canvas!: HTMLCanvasElement;
-  private canvasHeight = 512;
-  private canvasWidth = 512;
-  private context!: CanvasRenderingContext2D;
-  private defectClasses: DefectClass[] = [];
-  private defectClassesWithoutOk: DefectClass[] = [];
-  private displayedColumns = ['name', 'confidence', 'controls']
+  canvas!: HTMLCanvasElement;
+  canvasHeight = 512;
+  canvasWidth = 512;
+  context!: CanvasRenderingContext2D;
+  defectClasses: DefectClass[] = [];
+  defectClassesWithoutOk: DefectClass[] = [];
+  displayedColumns = ['name', 'confidence', 'controls']
 
-  private image!: Image;
-  private imageSet?: ImageSet;
-  private imageSetId!: number;
-  private img = new Image();
-  private isDrawing = false;
-  private isImageDownloaded = false;
-  private manualLabel: Label = {} as Label;
-  private modelsThatPredictedImage: Model[] = []
-  private rectangles: { x: number, y: number, width: number, height: number }[] = [];
-  private scaleFactor = 1;
-  private selectedDefectClassId: FormControl<number | null> = new FormControl(null, [Validators.required, Validators.min(1)]);
-  private selectedModel: FormControl<string> = new FormControl();
-  private startX = 0;
-  private startY = 0;
-  private tabIndex = 0;
+  image!: Image;
+  imageSet?: ImageSet;
+  imageSetId!: number;
+  img = new Image();
+  isDrawing = false;
+  isImageDownloaded = false;
+  manualLabel: Label = {} as Label;
+  modelsThatPredictedImage: Model[] = []
+  rectangles: { x: number, y: number, width: number, height: number }[] = [];
+  scaleFactor = 1;
+  selectedDefectClassId: FormControl<number | null> = new FormControl(null, [Validators.required, Validators.min(1)]);
+  selectedModel: FormControl<string> = new FormControl();
+  startX = 0;
+  startY = 0;
+  tabIndex = 0;
   constructor (
     private imageService: ImageService,
     private labelService: LabelService,
@@ -62,7 +62,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     private toastr: ToastrService
   ) {}
 
-  private clearRectangles() {
+  clearRectangles() {
 
     this.rectangles = [];
     this.selectedDefectClassId.setValue(null)
@@ -70,7 +70,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.context.drawImage(this.img, 0, 0, this.img.width, this.img.height);
   }
 
-  private createAutomaticDataSource() {
+  createAutomaticDataSource() {
     // setting data source for inferred labels table
     const dataSource = this.automaticLabels.map(label => {
       const defect = this.defectClasses.find(defect => defect.id === label.defectClassId);
@@ -82,13 +82,13 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.automaticLabelsDataSource = new MatTableDataSource(dataSource);
   }
 
-  private drawAll() {
+  drawAll() {
     for (const rect of this.rectangles) {
       this.drawRect(rect.x, rect.y, rect.width, rect.height);
     }
   }
 
-  private drawAllAutomaticRect() {
+  drawAllAutomaticRect() {
     this.clearRectangles()
     this.rectangles = this.automaticLabels.map((label) => {
       const [x, y, width, height] = label.labelData.xy;
@@ -99,7 +99,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.drawAll()
   }
 
-  private drawImage() {
+  drawImage() {
     const containerWidth = this.canvasHeight;
     const scale = containerWidth / this.img.width;
     
@@ -115,7 +115,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.drawAll();
   }
 
-  private drawRect(
+  drawRect(
     x: number, 
     y: number,
     width: number, 
@@ -142,13 +142,13 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     
   }
 
-  private drawSpecificRect(label: Label) {
+  drawSpecificRect(label: Label) {
     const [x, y, width, height] = label.labelData.xy;
     this.clearRectangles()
     this.drawRect(x, y, width, height, 'red')
   }
 
-  private loadCanvas(canvasId: string) {
+  loadCanvas(canvasId: string) {
     this.canvas = <HTMLCanvasElement>document.getElementById(canvasId);
     this.context = this.canvas.getContext('2d')!;
     this.loadImage();
@@ -159,7 +159,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
 
   }
 
-  private loadImage() {
+  loadImage() {
     if (this.isImageDownloaded) {
       this.drawImage();
     }
@@ -169,7 +169,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private markAsOk() {
+  markAsOk() {
     this.clearRectangles()
     this.rectangles.push({
       x: 0,
@@ -182,7 +182,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.drawRect(0, 0, this.img.width, this.img.height, 'green')
   }
 
-  private onMouseDown(event: MouseEvent) {
+  onMouseDown(event: MouseEvent) {
     if (this.tabIndex !== 0) return;
     this.selectedDefectClassId.markAsTouched();
     this.isDrawing = true;
@@ -198,7 +198,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.startY = (event.clientY - rect.top) / this.scaleFactor;
   }
 
-  private onMouseMove(event: MouseEvent) {
+  onMouseMove(event: MouseEvent) {
     if (this.isDrawing) {
       const rect = this.canvas.getBoundingClientRect();
       const endX = (event.clientX - rect.left) / this.scaleFactor;
@@ -210,7 +210,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private onMouseUp(event: MouseEvent) {
+  onMouseUp(event: MouseEvent) {
     if (this.isDrawing) {
       this.isDrawing = false;
 
@@ -249,7 +249,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private toggleTab(event: MatTabChangeEvent) {
+  toggleTab(event: MatTabChangeEvent) {
     this.tabIndex = event.index;
     this.clearRectangles();
 

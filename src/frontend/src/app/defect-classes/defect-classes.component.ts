@@ -13,10 +13,11 @@ import { AddDefectModalComponent } from './add-defect-modal/add-defect-modal.com
 })
 export class DefectClassesComponent implements OnInit {
   
-  private dataSource!: MatTableDataSource<DefectClass>;
-  private displayedColumns: string[] = ['name', 'createdAt', 'controls'];
+  dataSource!: MatTableDataSource<DefectClass>;
+  displayedColumns: string[] = ['name', 'createdAt', 'controls'];
+
 // the ids of two first defect which are mandatory and can't be deleted
-  private protectedDefectIds = [1, 2];
+  protectedDefectIds = [1, 2];
   constructor(
     private defectClassService: DefectClassService,
     private modal: NgbModal,

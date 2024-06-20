@@ -14,11 +14,11 @@ interface ModalConfirmContent {
   styleUrls: ['./confirm-modal.component.scss'],
 })
 export class ModalConfirmComponent {
-  private content!: ModalConfirmContent;
+  public content!: ModalConfirmContent;
 
   constructor(private modal: NgbActiveModal) {}
 
-  private close(confirmed: boolean): void {
+  close(confirmed: boolean): void {
     this.modal.close(confirmed);
   }
 }

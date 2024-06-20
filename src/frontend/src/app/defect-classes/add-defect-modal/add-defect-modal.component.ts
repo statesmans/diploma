@@ -10,7 +10,7 @@ import { DefectClassService } from '../../services/defect-class.service';
 })
 export class AddDefectModalComponent implements OnInit {
 
-  private defectForm!: FormGroup;
+  defectForm!: FormGroup;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -18,7 +18,7 @@ export class AddDefectModalComponent implements OnInit {
     private defectClassService: DefectClassService,
   ) {}
 
-  private buildForm(): FormGroup {
+  buildForm(): FormGroup {
     return this.fb.group({
       name: ["", [Validators.required, Validators.maxLength(255)]],
     });

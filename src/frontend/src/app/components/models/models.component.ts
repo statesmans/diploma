@@ -19,14 +19,14 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './models.component.scss'
 })
 export class ModelsComponent implements OnInit {
-  private color: ThemePalette = 'primary';
-  private dataSource!: MatTableDataSource<Model>;
-  private displayedColumns: string[] = ['name', 'trainingSet', 'createdAt', 'controls'];
-  private mode: ProgressSpinnerMode = 'indeterminate';
-  private searchControl: FormControl = new FormControl();
-  private searchControlSub$?: Subscription;
-  private trainingStatuses: Record<string, boolean> = {}
-  private value = 50;
+  color: ThemePalette = 'primary';
+  dataSource!: MatTableDataSource<Model>;
+  displayedColumns: string[] = ['name', 'trainingSet', 'createdAt', 'controls'];
+  mode: ProgressSpinnerMode = 'indeterminate';
+  searchControl: FormControl = new FormControl();
+  searchControlSub$?: Subscription;
+  trainingStatuses: Record<string, boolean> = {}
+  value = 50;
   constructor(
     private modelService: ModelService,
     private imageSetService: ImageSetService, 
@@ -35,11 +35,11 @@ export class ModelsComponent implements OnInit {
     private toastr: ToastrService,
   ) {}
 
-  private goToTrainingSet(trainigSetId: number) {
+  goToTrainingSet(trainigSetId: number) {
     this.router.navigate(['/image-set', trainigSetId]);
   }
 
-  private ngOnDestroy(): void {
+  ngOnDestroy(): void {
     this.searchControlSub$?.unsubscribe();
   }
 

@@ -29,32 +29,24 @@ enum ManualClassificationValue {
   styleUrl: './image-set.component.scss'
 })
 export class ImageSetComponent implements OnInit, OnDestroy {
-  private automaticClassification = new FormControl<string | null>('All');
-  private automaticClassifications: Classification[] = [
+  automaticClassification = new FormControl<string | null>('All');
+  automaticClassifications: Classification[] = [
     { 
       name: 'All',
       value: '',
     },
-    // { 
-    //   name: 'OK',
-    //   value: 'OK',
-    // },
-    // { 
-    //   name: 'Defect',
-    //   value: 'Defect',
-    // },
 
   ]
-  private images: PaginatedResponse<Image> = {
+  images: PaginatedResponse<Image> = {
     data: [],
     total: 0,
   };
-  private imageSet: ImageSet = {} as ImageSet;
-  private imageSetName = new FormControl<string>('', [Validators.required, Validators.minLength(1)]);
-  private imagesOffset: number = 0;
-  private imagesPageSize: number = 50;
-  private manualClassification = new FormControl<string | null>('All');
-  private manualClassifications: Classification[] = [
+  imageSet: ImageSet = {} as ImageSet;
+  imageSetName = new FormControl<string>('', [Validators.required, Validators.minLength(1)]);
+  imagesOffset: number = 0;
+  imagesPageSize: number = 50;
+  manualClassification = new FormControl<string | null>('All');
+  manualClassifications: Classification[] = [
     { 
       name: 'All',
       value: '',
@@ -74,10 +66,10 @@ export class ImageSetComponent implements OnInit, OnDestroy {
 
     
   ];
-  private models: Model[] = [];
-  private searchControl: FormControl = new FormControl<string>('');
-  private selectedModel = new FormControl<string | null>(null);
-  private subs$: Subscription[] = [];
+  models: Model[] = [];
+  searchControl: FormControl = new FormControl<string>('');
+  selectedModel = new FormControl<string | null>(null);
+  subs$: Subscription[] = [];
 
   get canSave() {
     return this.imageSetName.valid && this.selectedModel.valid && (this.manualClassification.touched || this.automaticClassification.touched);

@@ -12,9 +12,9 @@ import JSONEditor, { JSONEditorOptions } from 'jsoneditor';
   styleUrl: './add-model-modal.component.scss'
 })
 export class AddModelModalComponent implements OnInit {
-  private editMode: boolean = false;
-  private editor!: JSONEditor;
-  private editorOptions: JSONEditorOptions = {
+  @ViewChild('jsonEditorContainer', { static: true }) jsonEditorContainer!: ElementRef;
+  editor!: JSONEditor;
+  editorOptions: JSONEditorOptions = {
     mode: 'tree',
     onChange: () => {
       const updatedJson = this.editor.get();
@@ -23,30 +23,19 @@ export class AddModelModalComponent implements OnInit {
       })
     }
   };
-  private imageSets: ImageSet[] = [];
-  @ViewChild('jsonEditorContainer', { static: true }) private jsonEditorContainer!: ElementRef;
-  private modelForm!: FormGroup;
-  private modelId!: string;
+
+  editMode: boolean = false;
+  modelId!: string;
+
+  modelForm!: FormGroup;
+  imageSets: ImageSet[] = [];
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly modal: NgbActiveModal,
     private imageSetService: ImageSetService,
     private modelService: ModelService,
   ) {}
-
-  private buildForm(): FormGroup {
-    return this.fb.group({
-      name: ["", [Validators.required, Validators.maxLength(64)]],
-      trainingSet: [null, Validators.required],
-      hyperparameter: [{}]
-    });
-  }
-
-  private ngOnDestroy(): void {
-    if (this.editor) {
-      this.editor.destroy();
-    }
-  }
 
   async ngOnInit(): Promise<void> {
     this.modelForm = this.buildForm();
@@ -82,5 +71,19 @@ export class AddModelModalComponent implements OnInit {
     }
 
     this.modal.close(true);
+  }
+
+  buildForm(): FormGroup {
+    return this.fb.group({
+      name: ["", [Validators.required, Validators.maxLength(64)]],
+      trainingSet: [null, Validators.required],
+      hyperparameter: [{}]
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.editor) {
+      this.editor.destroy();
+    }
   }
 }

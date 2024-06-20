@@ -9,9 +9,9 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   styleUrl: './add-image-set-modal.component.scss'
 })
 export class AddImageSetModalComponent {
-  private editMode = false;
+  editMode = false;
 
-  private name = new FormControl('', [Validators.required, Validators.maxLength(64)]);
+  name = new FormControl('', [Validators.required, Validators.maxLength(64)]);
 
   constructor(
     private imageSetService: ImageSetService,
