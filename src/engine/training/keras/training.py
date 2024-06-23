@@ -2,30 +2,32 @@ import os
 import numpy as np
 from azure_adapter import upload_model, download_model_file
 from training.YOLOv8.training import process_predictions, preload_images
-
 import tensorflow as tf
-
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
+import cv2
 
 def build_model(num_classes, learning_rate):
     base_model = MobileNetV2(weights='imagenet', include_top=False)
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
     x = Dense(1024, activation='relu')(x)
-    predictions = Dense(num_classes, activation='softmax')(x)
+    predictions = Dense(num_classes, activation='sigmoid')(x)
+
     model = Model(inputs=base_model.input, outputs=predictions)
 
     for layer in base_model.layers:
         layer.trainable = False
 
-    model.compile(optimizer=Adam(learning_rate=learning_rate), loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
-async def start_KERAS_trainig(model_uuid, hyperparameters):
+async def start_KERAS_trainig(model_uuid, hyperparameters, defect_classes):
+    defect_classes_values = [value for key, value in defect_classes.items()]
+     
 
     dataset_dir = os.getenv('DATASET_DIR')
     train_dir = os.path.join(dataset_dir, 'images/train_processed')
@@ -40,14 +42,16 @@ async def start_KERAS_trainig(model_uuid, hyperparameters):
         train_dir,
         target_size=(target_image_size, target_image_size),
         batch_size=hyperparameters['batch_size'],
-        class_mode='categorical'
+        class_mode='categorical',
+        classes=defect_classes_values
     )
 
     val_generator = val_datagen.flow_from_directory(
         val_dir,
         target_size=(target_image_size, target_image_size),
         batch_size=hyperparameters['batch_size'],
-        class_mode='categorical'
+        class_mode='categorical',
+        classes=defect_classes_values
     )
 
     model = build_model(num_classes=train_generator.num_classes, learning_rate=0.001)
@@ -66,14 +70,13 @@ async def start_KERAS_trainig(model_uuid, hyperparameters):
     upload_model(f"{model_uuid}.keras", model_path)
     return f"{model_uuid}.keras"
 
-async def start_KERAS_inference(manifest):
+async def start_KERAS_inference(manifest, hyperparameters):
     model_uuid = manifest.model_uuid
     await preload_images(manifest)
 
     path_to_save = os.path.join(os.getenv('DATASET_DIR'))
 
     model_blob_name = model_uuid + '.keras'
-
     await download_model_file(model_blob_name, model_blob_name, os.getenv('DATASET_DIR'))
 
     model_path = os.path.join(path_to_save, model_blob_name)
@@ -84,7 +87,7 @@ async def start_KERAS_inference(manifest):
 
     results = []
     for image_path in image_paths:
-        image = tf.keras.preprocessing.image.load_img(image_path, target_size=(224, 224))
+        image = tf.keras.preprocessing.image.load_img(image_path, target_size=(hyperparameters['target_image_size'], hyperparameters['target_image_size']))
         image_array = tf.keras.preprocessing.image.img_to_array(image) / 255.0
         image_array = np.expand_dims(image_array, axis=0)
 
@@ -98,6 +101,58 @@ async def start_KERAS_inference(manifest):
             "confidence": confidence
         })
 
+
     filtered_results = process_predictions(results, manifest.defects)
 
-    return filtered_results
+    return {
+        uuid_file: {
+            defect_name: {
+                'bbox': [float(x) for x in defect_detail['bbox']],
+                'confidence': float(defect_detail['confidence']),
+                'defect_class_id': int(defect_detail['defect_class_id'])
+            }
+            for defect_name, defect_detail in defect_info.items()
+        }
+        for uuid_file, defect_info in filtered_results.items()
+    }
+
+def process_predictions(predictions, defect_mapping):
+    result = {}
+    for res in predictions:
+        image_path = res['path']
+        label = res['predicted_class']
+        confidence = res['confidence']
+
+        width, height = cv2.imread(image_path).shape[:2]
+
+        # Get the filename from the image path
+        filename = os.path.splitext(os.path.basename(image_path))[0]
+
+
+        # Dictionary to store the highest confidence for each defect type
+        defect_confidences = {defect: [] for defect in defect_mapping.values()}
+
+        label_id = str(int(label) + 1)
+        label_name = defect_mapping[label_id]
+        defect_confidences[label_name].append((confidence, label_id))
+
+        # Select the most confident labels for each defect
+        filtered_defects = {}
+        for defect, bbox_conf_list in defect_confidences.items():
+            if bbox_conf_list:
+                # Select the bounding box with the highest confidence for this defect
+                best_confidence, label_id = max(bbox_conf_list, key=lambda x: x[1])
+                filtered_defects[defect] = {
+                    'bbox': [0, 0, width, height],
+                    'confidence': best_confidence,
+                    'defect_class_id': label_id
+                }
+
+        # If there is any defect other than 'ok', remove 'ok'
+        if any(defect != 'OK' for defect in filtered_defects):
+            filtered_defects.pop('OK', None)
+
+        # Save the filtered defects to the result dictionary
+        result[filename] = filtered_defects
+
+    return result

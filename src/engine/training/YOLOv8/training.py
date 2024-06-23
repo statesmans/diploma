@@ -17,7 +17,6 @@ def augment_and_process_image(image, bbox, target_size):
     
     try:
         bbox = [max(0, min(1, v)) for v in bbox]
-        print('After range check', bbox)
 
         transform = A.Compose([
             A.HorizontalFlip(p=0.5),
@@ -40,8 +39,6 @@ def augment_and_process_image(image, bbox, target_size):
             
             image = augmented['image']
     
-        
-            print('After augmented', augmented)
             image = augmented['image']
             bbox = augmented['bboxes'][0]
 
@@ -70,7 +67,7 @@ def augment_and_process_image(image, bbox, target_size):
             return padded_image, adjusted_bbox
 
     except Exception as e:
-        print('Error during augmentation:', e)
+        print(f"Error processing image: {e}")
         return image, bbox
 
 def normalize_label(
@@ -101,11 +98,9 @@ def normalize_label(
     yolo_width = (width_box / width) - (1 / width)
     yolo_height = (height_box / height) - (1 / height)
 
-
     # Ensure that all normalized values are within [0, 1]
     if any(val < 0 or val > 1 for val in [x_center, y_center, yolo_width, yolo_height]):
         raise ValueError("Normalized values must be between 0 and 1")
-    print(f"{x_center} {y_center} {yolo_width} {yolo_height}\n")
     # Write the YOLO formatted label to file
     return [x_center, y_center, yolo_width, yolo_height]
 
@@ -119,9 +114,7 @@ async def preload_images(manifest: TrainingManifest):
 
         image_saving_filename = file_uuid + os.path.splitext(filename)[1]
         blob_name = get_blob_name(filename, file_uuid)
-        # image_path = os.path.join(val_image_file_dir, image_saving_filename)
         test = os.path.join(os.getenv('DATASET_DIR'), 'source')
-        print(blob_name + " " + test + " " + image_saving_filename) 
         await download_file_and_save(blob_name, image_saving_filename, test)
 
 
@@ -133,31 +126,22 @@ def prepare_and_save_label_and_image(
     target_size
 ):
     image_filename = os.path.splitext(os.path.basename(image_path))[0]
-    print('before  image_label_data = labels[image_filename].label_data', labels[image_filename])
 
     image_label_data = labels[image_filename].label_data
-    print('aftetrr  image_label_data = labels[image_filename].label_data', image_label_data)
 
     image_label_defect_id = str(labels[image_filename].defect_id)
     image_defect_name = defects.get(image_label_defect_id, 'unknown_defect')
-    print('aftetrr  image_defect_name', image_path)
-
     image = cv2.imread(image_path)
     x_center, y_center, width_box, height_box = normalize_label(image_label_data, image_filename, image_path)
 
     bbox = [x_center, y_center, width_box, height_box]
 
     processed_image, bbox = augment_and_process_image(image, bbox, target_size)
-    
-    print('image_path', image_path)
-    print('bbox', bbox)
+
     output_image_path_dir = os.path.join(output_dir, image_defect_name)
     os.makedirs(output_image_path_dir, exist_ok=True)
 
-    # print('output_path', output_image_path_dir, image.shape, image.shape, processed_image)
     cv2.imwrite(os.path.join(output_image_path_dir, os.path.basename(image_path)), processed_image)
-    # cv2.imwrite(os.path.join(output_image_path_dir, os.path.basename(image_path)), image)
-
 
     label_output_path =  os.path.join(output_dir, image_defect_name).replace('images', 'labels')
     os.makedirs(label_output_path, exist_ok=True)
@@ -166,18 +150,11 @@ def prepare_and_save_label_and_image(
     # Replace extension with .txt
     label_file_name = file_name + '.txt'    
 
-    print('before open')
     with open(os.path.join(label_output_path, label_file_name), 'w+') as label_file:
-        print('after open', image_label_defect_id)
-        print(bbox)
-  
-
 
         for idx, defect_class_id in enumerate(defects):
-            print(int(defect_class_id), int(image_label_defect_id))
             if int(defect_class_id) == int(image_label_defect_id):
                 yolo_bbox = [idx] + bbox
-                print('yolo_bbox', yolo_bbox)
                 label_file.write(' '.join(map(str, yolo_bbox)))
 
 
@@ -203,7 +180,6 @@ async def prepare_dataset(manifest: TrainingManifest, hyperparameters: Hyperpara
     defects = manifest.defects
 
     train_images, val_images = train_test_split(image_paths, train_size=hyperparameters['train_size_coeficient'], random_state=42)
-    print(train_images, val_images)
 
     for image_path in train_images:
         prepare_and_save_label_and_image(image_path, labels, defects, train_output_dir, target_size)
@@ -212,7 +188,6 @@ async def prepare_dataset(manifest: TrainingManifest, hyperparameters: Hyperpara
         prepare_and_save_label_and_image(image_path, labels, defects, val_output_dir, target_size)
 
     save_yaml_file(defects, train_output_dir, val_output_dir)
-
 
 def save_yaml_file(
     defects: Dict[str, str],
@@ -239,14 +214,6 @@ def save_yaml_file(
 
 
 def resize_images(directory_path, width, height):
-    """
-    Resizes all images in the specified directory to the given width and height.
-
-    Parameters:
-    directory_path (str): Path to the directory containing images.
-    width (int): Desired width of the output images.
-    height (int): Desired height of the output images.
-    """
     # Supported image extensions
     supported_extensions = ['.jpg', '.jpeg', '.png']
 
@@ -272,8 +239,6 @@ def resize_images(directory_path, width, height):
 
  # Function to process predictions and filter based on defects
 def process_predictions(predictions, defect_mapping):
-    print('processing predictions', defect_mapping)
-    print('predictions', predictions)
     result = {}
     for res in predictions:
         image_path = res.path
@@ -290,15 +255,13 @@ def process_predictions(predictions, defect_mapping):
         defect_confidences = {defect: [] for defect in defect_mapping.values()}
 
         for box, label, confidence in zip(boxes, labels, confidences):
-            print('for box, label, confidence in zip(boxes, labels, confidences):', box, label, confidence)
 
             label_id = str(int(label) + 1)
             label_name = defect_mapping[label_id]
-            print('[label_name]', label_name, label, str(int(label)), defect_mapping)
+
             if label_name in defect_confidences:
                 defect_confidences[label_name].append((box, confidence, label_id))
 
-        print('defect_confidences', defect_confidences)
         # Select the most confident labels for each defect
         filtered_defects = {}
         for defect, bbox_conf_list in defect_confidences.items():
@@ -310,7 +273,7 @@ def process_predictions(predictions, defect_mapping):
                     'confidence': best_confidence,
                     'defect_class_id': label_id
                 }
-        print('filtered defects', filtered_defects)
+
         # If there is any defect other than 'ok', remove 'ok'
         if any(defect != 'OK' for defect in filtered_defects):
             filtered_defects.pop('OK', None)
@@ -321,32 +284,22 @@ def process_predictions(predictions, defect_mapping):
     return result
 
 
-async def start_YOLO_inference(manifest: InferenceManifest):
+async def start_YOLO_inference(manifest: InferenceManifest, hyperparameters: Hyperparameters):
     model_uuid = manifest.model_uuid
-    images = manifest.images.items()
-    print(manifest.defects)
+
     await preload_images(manifest)
 
-    # resize_images(os.path.join(os.getenv('DATASET_DIR'), 'source'), 512, 512)
+    resize_images(os.path.join(os.getenv('DATASET_DIR'), 'source'), hyperparameters['target_image_size'], hyperparameters['target_image_size'])
 
     path_to_save = os.path.join(os.getenv('DATASET_DIR'))
-    # print('before +', model_uuid)
-    model_blob_name = model_uuid + '.pt'
-    # print('before download_file_and_save')
 
-    # await download_file_and_save(model_blob_name, model_blob_name, os.getenv('DATASET_DIR'))
+    model_blob_name = model_uuid + '.pt'
+
     await download_model_file(model_blob_name, model_blob_name, os.getenv('DATASET_DIR'))
     model_path = os.path.join(path_to_save, model_blob_name)
-    
-    # model_path = os.path.join(os.getenv('DATASET_DIR'), 'results', 'train', 'weights', 'best.pt')
 
-    print('[before load model]', model_path)
-
-    # print('before init', model_path)
     model = YOLO(model_path)
-    print('[after load model]')
 
-    # print('after init')
     # Define the directory paths
     test_images_dir = os.path.join(os.getenv('DATASET_DIR'), 'source')
 
@@ -354,9 +307,7 @@ async def start_YOLO_inference(manifest: InferenceManifest):
 
     # Ensure the results directory exists
     os.makedirs(results_dir, exist_ok=True)
-    print('[before predict]')
 
-    # Load the model
     # Make predictions on the test images
     predicition_results = model.predict(
         source=test_images_dir, 
@@ -365,7 +316,7 @@ async def start_YOLO_inference(manifest: InferenceManifest):
         
         save=True  # Save the predictions
     )
-
+    
     # Process and filter the prediction results
     filtered_results = process_predictions(predicition_results, manifest.defects)
 
@@ -376,12 +327,22 @@ async def start_YOLO_inference(manifest: InferenceManifest):
         for defect, info in defects.items():
             print(f"  Defect: {defect}, Confidence: {info['confidence']}, BBox: {info['bbox']}")
 
-    return filtered_results
+    return {
+        uuid_file: {
+            defect_name: {
+                'bbox': [float(x) for x in defect_detail['bbox']],
+                'confidence': float(defect_detail['confidence']),
+                'defect_class_id': int(defect_detail['defect_class_id'])
+            }
+            for defect_name, defect_detail in defect_info.items()
+        }
+        for uuid_file, defect_info in filtered_results.items()
+    }
+    
 
 
 async def start_YOLO_training(model_uuid: str, hyperparameters: Hyperparameters):
     # selecting yolov8n model as base to fine-tune it
-    print('before training start')
     model = YOLO('yolov8n.pt')  
     # enabling using of the GPU
     model.cuda()

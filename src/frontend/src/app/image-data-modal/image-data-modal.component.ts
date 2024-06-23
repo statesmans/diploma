@@ -71,6 +71,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
   }
 
   createAutomaticDataSource() {
+    console.log(this.automaticLabels)
     // setting data source for inferred labels table
     const dataSource = this.automaticLabels.map(label => {
       const defect = this.defectClasses.find(defect => defect.id === label.defectClassId);
@@ -305,16 +306,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
     this.defectClassesWithoutOk = this.defectClasses.filter(defect => defect.id !== ManualDefects.OK);
 
 
-    const automaticLabels = await this.labelService.getAutomaticByImageId(this.image.id);
-
-    automaticLabels.map(async label => {
-      const model = this.modelsThatPredictedImage.find(model => model.id === label.modelUuid);
-
-      if (label.Model && !model) {
-        const model = await this.modelService.getOne(label.modelUuid);
-        this.modelsThatPredictedImage.push(model);
-      }
-    })
+    this.updatePredictionModels();
 
     this.selectedModel.valueChanges.subscribe(async modelId => {
       this.automaticLabels = await this.labelService.getAutomaticByImageId(this.image.id);
@@ -337,6 +329,21 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
       this.drawAll()
     })
 
+  }
+
+  async updatePredictionModels() {
+    const automaticLabels = await this.labelService.getAutomaticByImageId(this.image.id);
+
+    automaticLabels.map(async label => {
+      const model = this.modelsThatPredictedImage.find(model => model.id === label.modelUuid);
+
+      if (!model) {
+        const model = await this.modelService.getOne(label.modelUuid);
+        this.modelsThatPredictedImage.push(model);
+      }
+      console.log(this.modelsThatPredictedImage)
+
+    })
   }
 
   async openLabelDeleteModal(labelId: number) {
@@ -362,7 +369,8 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
   }
 
   async predictImage() {
-    this.modelService.startPredictionOnImage(this.imageSet!.selectedModel!, this.image.id);
+    await this.modelService.startPredictionOnImage(this.imageSet!.selectedModel!, this.image.id);
+    this.updatePredictionModels()
   }
 
   async saveLabel() {

@@ -18,7 +18,10 @@
             </div>
         </div>
     </div>
-    <mat-paginator [length]="images.total"
+    <mat-paginator 
+        *ngIf="showPagination" 
+        class="mt-3"
+        [length]="images.total"
         [pageSize]="defaultPageSize"
         [pageSizeOptions]="[5, 10, 25, 50]"
         aria-label="Select page"

@@ -2,20 +2,37 @@
     <div class="controls">
 
         <div class="d-flex justify-content-between">
-            <div>
+            <div class="left-controls d-flex flex-col">
                 <mat-form-field >
                     <mat-label>Image set name</mat-label>
                     <input matInput  [formControl]="imageSetName" >
                     
                 </mat-form-field>
-                <div class="left-side-controls mb-2">
+                <mat-form-field class="w-full">
+                    <mat-label>Select model</mat-label>
+                    <mat-select [formControl]="selectedModel">
+        
+                        <mat-option *ngFor="let model of models" [value]="model.id">{{model.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field class="w-full">
+                    <mat-label>Manual classification</mat-label>
+                    <mat-select [formControl]="manualClassification" placeholder="All">
+        
+                        <mat-option *ngFor="let classification of manualClassifications" [value]="classification.value">{{classification.name}}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            
+            <div class="d-flex flex-col">
+                <div class="mb-2">
                     <button 
-                        *ngIf="selectedModel.value"
-                        [disabled]="!selectedModel.value" 
-                        class="btn btn-primary inference-btn mr-2 "
-                        (click)="startInference()"
+                    *ngIf="selectedModel.value"
+                    [disabled]="!selectedModel.value" 
+                    class="btn btn-primary inference-btn mr-2 "
+                    (click)="startInference()"
                     >
-                        Predict image-set
+                        Predict dataset
                     </button>
                     <input
                         #input
@@ -30,34 +47,6 @@
                         Load images
                     </button>
                 </div>
-                <div>
-                    <mat-form-field class="w-full">
-                        <mat-label>Select model</mat-label>
-                        <mat-select [formControl]="selectedModel">
-            
-                            <mat-option *ngFor="let model of models" [value]="model.id">{{model.name}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-label>Manual classification</mat-label>
-                        <mat-select [formControl]="manualClassification" placeholder="All">
-            
-                            <mat-option *ngFor="let classification of manualClassifications" [value]="classification.value">{{classification.name}}</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field *ngIf="selectedModel.value" class="w-full">
-                        <mat-label>Automatic classification</mat-label>
-                        <mat-select [formControl]="automaticClassification" placeholder="All">
-            
-                            <mat-option *ngFor="let classification of automaticClassifications" [value]="classification.value">{{classification.name}}</mat-option>
-
-                        </mat-select>
-                    </mat-form-field>
-                </div>
-            </div>
-            
-            <div class="d-flex flex-col">
                 <button 
                     [disabled]="canSave"
                     class="btn btn-primary mb-2"

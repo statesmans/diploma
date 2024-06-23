@@ -31,11 +31,6 @@ export class ImageSet1715522613529 implements MigrationInterface {
                         isNullable: true,
                     },
                     {
-                        name: 'test_set',
-                        type: 'integer',
-                        isNullable: true,
-                    },
-                    {
                         name: 'created_at',
                         type: 'datetime',
                         default: 'CURRENT_TIMESTAMP',
@@ -53,16 +48,14 @@ export class ImageSet1715522613529 implements MigrationInterface {
                         type: "varchar",
                         length: "255",
                         isNullable: true
-                    }
+                    },
+                    {
+                        name: 'hyperparameter',
+                        type: 'json',
+                        isNullable: true,
+                    },
                 ],
                 foreignKeys: [
-                    new TableForeignKey({
-                        columnNames: ['test_set'],
-                        referencedColumnNames: ['id'],
-                        referencedTableName: `image_set`,
-                        onDelete: 'SET NULL',
-                        onUpdate: 'CASCADE',
-                    }),
                     new TableForeignKey({
                         columnNames: ['training_set'],
                         referencedColumnNames: ['id'],

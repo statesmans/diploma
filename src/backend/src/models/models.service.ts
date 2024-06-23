@@ -58,7 +58,9 @@ export class ModelsService {
     const model = await this.modelRepository.findOneBy({ id });
     await this.modelRepository.delete(id);
 
-    await this.azureService.deleteFile(model.trainingResultFileUuid);
+    if (model.trainingResultFileUuid) {
+      await this.azureService.deleteFile(model.trainingResultFileUuid);
+    }
   }
 
   async startTraining(id: string): Promise<void> {
@@ -66,7 +68,6 @@ export class ModelsService {
       where: { id },
       relations: [
         'TrainingSet',
-        'TestSet'
       ]
     });
 

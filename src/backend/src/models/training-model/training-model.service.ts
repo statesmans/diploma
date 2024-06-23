@@ -28,6 +28,7 @@ export class TrainingModelService {
             });
             return data;
         } catch (e) {
+            console.log(e)
             throw new InternalServerErrorException(e.response.data.detail)
         }
     }

@@ -1,5 +1,0 @@
-train: /home/yegor/diploma/src/engine/dataset/images/train
-val: /home/yegor/diploma/src/engine/dataset/images/val
-test: /home/yegor/diploma/src/engine/dataset/images/test
-nc: 1  # number of classes
-names: ['abc']  # class names

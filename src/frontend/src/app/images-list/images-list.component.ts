@@ -1,8 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Image, PaginatedResponse } from '../shared/interfaces';
+import { Image, ImageSet, PaginatedResponse } from '../shared/interfaces';
 import { PageEvent } from '@angular/material/paginator';
 import { SelectionService } from '../services/selection.service';
 import { ActivatedRoute } from '@angular/router';
+import { ImageSetService } from '../services/image-set.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-images-list',
@@ -21,11 +23,13 @@ export class ImagesListComponent implements OnInit{
 
   isAllSelected = false;
   showDeleteBtn = false;
+  showPagination = false;
 
 
   constructor (
     private selectionService: SelectionService,
     private route: ActivatedRoute,
+    private imageSetService: ImageSetService,
   ) {}
 
   handleImagesUpdate() {
@@ -49,6 +53,10 @@ export class ImagesListComponent implements OnInit{
 
   async ngOnInit(): Promise<void> {
     this.imageSetId = +this.route.snapshot.paramMap.get('id')!;
+    const imageSet = await this.imageSetService.getOne(this.imageSetId!);
+
+    this.showPagination = imageSet.imagesCount > this.defaultPageSize;
+    
     this.selectionService.selectedImages.subscribe(images => {
       const selectedImagesLength = images.length;
 

@@ -52,7 +52,4 @@ export class ModelEntity {
 
   @OneToMany(() => LabelEntity, label => label.Model)
   Labels: LabelEntity[];
-
-  @Column({ type: 'text', nullable: true })
-  trainingResultFileName!: string;
 }
