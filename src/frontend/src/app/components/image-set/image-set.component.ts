@@ -105,7 +105,7 @@ export class ImageSetComponent implements OnInit, OnDestroy {
     const defects = await this.defectService.getAll();
     defects.map(defect => {
       if ([1,2].includes(defect.id)) return;
-      console.log(defect)
+
       this.manualClassifications.push({
         name: defect.name,
         value: defect.id
@@ -180,10 +180,12 @@ export class ImageSetComponent implements OnInit, OnDestroy {
   }
 
   async save() {
-    this.imageSetService.update(this.imageSet.id, {
+    await this.imageSetService.update(this.imageSet.id, {
       selectedModel: this.selectedModel.value,
       name: this.imageSetName.value!,
-    })
+    });
+
+    this.toastr.success('Image set successfully saved', 'Image Set');
   }
 
   async startInference() {

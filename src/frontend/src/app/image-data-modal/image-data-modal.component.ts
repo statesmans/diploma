@@ -71,7 +71,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
   }
 
   createAutomaticDataSource() {
-    console.log(this.automaticLabels)
+
     // setting data source for inferred labels table
     const dataSource = this.automaticLabels.map(label => {
       const defect = this.defectClasses.find(defect => defect.id === label.defectClassId);
@@ -280,7 +280,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
   async ngOnInit(): Promise<void> {
     this.imageSet = await this.ImageSetService.getOne(+this.imageSetId!);
     this.manualLabel = await this.labelService.getManualByImageId(this.image.id);
-    console.log(this.imageSet)
+
     // preserving image
     this.img.src = this.imageService.getImageUrl(this.image.uuidFile);
 
@@ -341,7 +341,6 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
         const model = await this.modelService.getOne(label.modelUuid);
         this.modelsThatPredictedImage.push(model);
       }
-      console.log(this.modelsThatPredictedImage)
 
     })
   }
@@ -370,6 +369,7 @@ export class ImageDataModalComponent implements OnInit, AfterViewInit {
 
   async predictImage() {
     await this.modelService.startPredictionOnImage(this.imageSet!.selectedModel!, this.image.id);
+    this.toastr.info('Image has been successfully predicted', 'Image prediciton');
     this.updatePredictionModels()
   }
 

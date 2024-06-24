@@ -1,6 +1,5 @@
 import { Controller, Get, Param, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-// import { DataResponse, asResponse } from 'src/lib/data-response';
 import { ImageEntity } from './image.entity';
 import { ImageService } from './image.service';
 import { ImageQueryDto } from './dto/image-query.dto';

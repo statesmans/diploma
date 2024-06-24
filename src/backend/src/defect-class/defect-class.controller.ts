@@ -11,7 +11,6 @@ export class DefectClassController {
     
     @Get()
     async getAll() {
-        console.log(await this.defectClassService.getAll())
         return await this.defectClassService.getAll();
     }
 

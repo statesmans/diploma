@@ -12,7 +12,6 @@ export class ImageSetController {
   async getAll(
     @Query() query: ImageSetQueryDto
   ): Promise<ImageSetEntity[]> {
-    console.log('query', query);
     return await this.imageSetService.getAll(query);
   }
 

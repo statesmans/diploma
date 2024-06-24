@@ -47,7 +47,6 @@ export class ModelsService {
   }
 
   async update(id: string, dto: ModelUpdateDto): Promise<ModelEntity> {
-    console.log(dto)
     return await this.modelRepository.save({
       id,
       ...dto
@@ -99,11 +98,9 @@ export class ModelsService {
       imageSetImages,
     );
 
-    console.log('predictImageSet', manifest);
-
     try {
       const predictionResult = await this.modelTrainingService.predict(manifest, model.hyperparameter || {});
-      console.log(predictionResult);
+
       await this.savePredictionResult(predictionResult, modelId);
 
     } catch (e) {
@@ -125,10 +122,7 @@ export class ModelsService {
       [image],
     );
 
-    console.log(manifest);
-
     const predictionResult = await this.modelTrainingService.predict(manifest, model.hyperparameter || {});
-    console.log(predictionResult);
     await this.savePredictionResult(predictionResult, modelId);
 
   }
@@ -197,7 +191,6 @@ export class ModelsService {
       .getMany()
 
     trainigSetImages.map(image => {
-      // const label = labels.find(label => label.imageId === image.id);
       const label = image.ManualLabel;
       if (!label?.labelData?.xy?.length) return; 
 
@@ -208,7 +201,6 @@ export class ModelsService {
       }
     });
 
-    console.log(manifest);
     return manifest;
   }
 

@@ -26,7 +26,6 @@ export class ImageSetService {
     }
 
     async getOne(id: number): Promise<ImageSet> {
-        console.log(id)
         return (await this.http.get<ImageSet>(`image-sets/${id}`)) as ImageSet;
     }
 

@@ -27,13 +27,6 @@ export class ImageSetService {
   }
 
   async getAll(query: ImageSetQueryDto = {}): Promise<ImageSetEntity[]> {
-    console.log(this.imageSetRepository.createQueryBuilder('imageSet')
-      .leftJoinAndSelect('imageSet.SelectedModel', 'model')
-      .where({
-        ...(query.search?.length && {
-          name: ILike(`${query.search}%`)
-        })
-      }).getQueryAndParameters())
     return await this.imageSetRepository.find({
       where: {
         ...(query.search?.length && {

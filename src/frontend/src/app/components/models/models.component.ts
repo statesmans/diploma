@@ -73,7 +73,7 @@ export class ModelsComponent implements OnInit {
     const modal = this.modal.open(ModalConfirmComponent, {
       centered: true,
     });
-    console.log(modelId)
+
     modal.componentInstance.content = {
       title: 'Confirm model deletion!',
       body: 'Are you sure you want to delete this model?',

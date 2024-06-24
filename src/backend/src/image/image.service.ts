@@ -132,7 +132,6 @@ export class ImageService {
 
         builder.orderBy('created_at', 'ASC');
 
-        console.log(builder.getQueryAndParameters())
 
         const [images, count] = await builder.getManyAndCount();
 

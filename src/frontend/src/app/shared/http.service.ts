@@ -27,7 +27,6 @@ export class HttpService {
     }
 
     getBackendEndpoint() {
-        // return 'https://57jmvwhk-13001.euw.devtunnels.ms';
         return 'http://localhost:13001';
 
     }

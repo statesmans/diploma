@@ -4,18 +4,27 @@ import { Image, PaginatedResponse } from "../shared/interfaces";
 import { HttpResponse } from "@angular/common/http";
 import { DataResponse } from "../shared/data-response";
 import { BehaviorSubject } from "rxjs";
+import { ToastrService } from "ngx-toastr";
 
 @Injectable()
 export class ImageService implements OnInit {
 
-    constructor(private http: HttpService) {}
+    constructor(
+        private http: HttpService,
+        private toastr: ToastrService,
+    ) {}
 
-    deleteImageBulk(imageIds: number[] | ['all'], imageSetId: number): Promise<any> {
+    async deleteImageBulk(imageIds: number[] | ['all'], imageSetId: number): Promise<void> {
         const query = rebuildObjectToQuery({
             ids: imageIds,
             imageSetId
         });
-        return this.http.delete(`images/bulk?${query}`);
+
+        await this.http.delete(`images/bulk?${query}`);
+
+        this.toastr.success('Images has been successfully deleted', 'Images');
+
+        return;
     }
 
     async getAllByImageSet(imageSetId: number, queryObj: Record<string, any> = {}): Promise<PaginatedResponse<Image>> {
